@@ -1,66 +1,162 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" class="scroll-smooth">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pendaftaran HIMATIF - Landing Page</title>
-  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <style>
-    /* Animasi Fade-in Sederhana */
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(-10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    body {
-      animation: fadeIn 0.6s ease-in-out;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pendaftaran HIMATIF - Bergabung dengan Inovator</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <style>
+        /* Animasi fade-in saat halaman dimuat */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        body {
+            animation: fadeIn 0.8s ease-in-out;
+        }
+        
+        /* Efek hover yang lebih mewah untuk kartu informasi */
+        .info-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+        }
+        .info-card:hover {
+            transform: translateY(-8px);
+            border-color: rgba(239, 68, 68, 0.5); /* Border merah transparan saat hover */
+            box-shadow: 0 10px 25px -5px rgba(239, 68, 68, 0.2), 0 8px 10px -6px rgba(239, 68, 68, 0.15); /* Bayangan merah yang lebih menonjol */
+        }
+    </style>
 </head>
-<body class="bg-gray-900 text-gray-200 min-h-screen flex flex-col">
-  <header class="bg-gray-800 shadow-lg shadow-red-900/20">
-    <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-      <div class="flex items-center gap-2">
-        <img src="logo.png" alt="HIMATIF" class="h-10">
-        <span class="font-bold text-xl text-red-500">HIMATIF</span>
-      </div>
-      <div class="space-x-4">
-        <a href="login.html" class="px-4 py-2 rounded bg-red-600 text-white font-semibold hover:bg-red-700 transition-colors">Login</a>
-        <a href="register.html" class="px-4 py-2 rounded bg-gray-700 text-gray-200 hover:bg-gray-600 transition-colors">Daftar</a>
-      </div>
-    </div>
-  </header>
-  <main class="flex-1 container mx-auto px-4 py-12">
-    <section class="mb-12 text-center">
-      <h1 class="text-3xl md:text-5xl font-bold mb-4 text-red-500">Pendaftaran Anggota Baru HIMATIF</h1>
-      <p class="text-lg text-gray-300 mb-6">Bergabunglah bersama keluarga besar Himpunan Mahasiswa Teknik Informatika!</p>
-      <div class="flex flex-col md:flex-row justify-center gap-8 mt-8">
-        <div class="bg-gray-800 rounded-lg shadow-lg p-6 w-full md:w-1/3 border border-gray-700">
-          <h2 class="font-semibold text-lg mb-2 text-red-500">Timeline Pendaftaran</h2>
-          <ul class="text-gray-300 text-left list-disc pl-5">
-            <li>Pendaftaran: 1 - 15 Juli 2025</li>
-            <li>Seleksi Berkas: 16 - 18 Juli 2025</li>
-            <li>Wawancara: 20 - 22 Juli 2025</li>
-            <li>Pengumuman: 25 Juli 2025</li>
-          </ul>
+<body class="bg-black text-neutral-200 min-h-screen flex flex-col font-sans">
+
+    <header class="bg-neutral-950/50 backdrop-blur-lg shadow-lg shadow-red-900/10 sticky top-0 z-50 border-b border-neutral-800">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <i class="fa-solid fa-code text-red-500 text-2xl"></i>
+                <span class="font-bold text-xl tracking-wider bg-gradient-to-r from-red-500 to-red-600 bg-clip-text text-transparent">HIMATIF</span>
+            </div>
+            <div id="guest-nav" class="flex items-center space-x-3 md:space-x-4">
+                <a href="login.html" class="px-5 py-2 rounded-md text-white font-semibold bg-gradient-to-r from-red-600 to-red-800 hover:scale-105 transition-transform duration-300">
+                    Login
+                </a>
+                <a href="register.html" class="px-5 py-2 rounded-md font-medium bg-transparent border border-neutral-600 text-neutral-300 hover:bg-neutral-800 hover:text-white transition-colors duration-300 hidden sm:inline">
+                    Daftar
+                </a>
+            </div>
+            <div id="user-nav" class="space-x-4 items-center" style="display:none;">
+                <span id="welcome-text" class="text-neutral-300 hidden md:inline"></span>
+                <a id="dashboard-link" href="#" class="px-5 py-2 rounded-md text-white font-semibold bg-gradient-to-r from-red-600 to-red-800 hover:scale-105 transition-transform duration-300">Dashboard</a>
+                <button onclick="logout()" class="px-5 py-2 rounded-md font-medium bg-neutral-700 text-neutral-200 hover:bg-neutral-600 transition-colors">Logout</button>
+            </div>
         </div>
-        <div class="bg-gray-800 rounded-lg shadow-lg p-6 w-full md:w-1/3 border border-gray-700">
-          <h2 class="font-semibold text-lg mb-2 text-red-500">Persyaratan</h2>
-          <ul class="text-gray-300 text-left list-disc pl-5">
-            <li>Mahasiswa aktif S1 Teknik Informatika</li>
-            <li>Mengisi data diri & motivasi</li>
-            <li>Mengunggah CV (format PDF, max 2MB)</li>
-          </ul>
+    </header>
+
+    <main class="flex-1 container mx-auto px-6 py-16">
+        <section class="mb-24 text-center">
+            <h1 class="text-4xl md:text-6xl font-extrabold mb-5 leading-tight bg-gradient-to-r from-red-500 to-red-700 bg-clip-text text-transparent">
+                Jadilah Bagian dari Inovasi, Bergabunglah dengan HIMATIF!
+            </h1>
+            <p class="text-lg text-neutral-400 mb-10 max-w-3xl mx-auto">
+                Buka potensimu, perluas jaringan, dan ciptakan masa depan teknologi bersama keluarga besar Himpunan Mahasiswa Teknik Informatika.
+            </p>
+            <a href="register.html" class="px-8 py-4 rounded-full bg-gradient-to-r from-red-600 to-red-800 text-white font-bold shadow-lg shadow-red-500/20 hover:shadow-red-500/40 transition-all duration-300 hover:scale-105">
+                Daftar Sekarang!
+            </a>
+        </section>
+
+        <section class="mb-24">
+            <div class="flex flex-col md:flex-row justify-center items-stretch gap-8">
+                <div class="info-card bg-neutral-900 rounded-xl shadow-md p-8 w-full md:w-1/2 lg:w-1/3 border border-neutral-800">
+                    <h2 class="font-bold text-2xl mb-4 text-red-500">Timeline Pendaftaran</h2>
+                    <ul class="text-neutral-300 text-left list-none space-y-3">
+                        <li class="flex items-center"><i class="fa-solid fa-calendar-days text-red-500/70 mr-3"></i>Pendaftaran: 1 - 15 Juli 2025</li>
+                        <li class="flex items-center"><i class="fa-solid fa-file-lines text-red-500/70 mr-3"></i>Seleksi Berkas: 16 - 18 Juli 2025</li>
+                        <li class="flex items-center"><i class="fa-solid fa-comments text-red-500/70 mr-3"></i>Wawancara: 20 - 22 Juli 2025</li>
+                        <li class="flex items-center"><i class="fa-solid fa-bullhorn text-red-500/70 mr-3"></i>Pengumuman: 25 Juli 2025</li>
+                    </ul>
+                </div>
+                <div class="info-card bg-neutral-900 rounded-xl shadow-md p-8 w-full md:w-1/2 lg:w-1/3 border border-neutral-800">
+                    <h2 class="font-bold text-2xl mb-4 text-red-500">Persyaratan</h2>
+                    <ul class="text-neutral-300 text-left list-none space-y-3">
+                        <li class="flex items-center"><i class="fa-solid fa-user-graduate text-red-500/70 mr-3"></i>Mahasiswa aktif S1 Teknik Informatika</li>
+                        <li class="flex items-center"><i class="fa-solid fa-keyboard text-red-500/70 mr-3"></i>Mengisi formulir pendaftaran online</li>
+                        <li class="flex items-center"><i class="fa-solid fa-sitemap text-red-500/70 mr-3"></i>Memilih 2 preferensi divisi</li>
+                        <li class="flex items-center"><i class="fa-solid fa-file-pdf text-red-500/70 mr-3"></i>Mengunggah CV (format PDF, max 2MB)</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section class="mb-24">
+            <h2 class="text-3xl md:text-4xl font-bold mb-12 text-center bg-gradient-to-r from-red-500 to-red-600 bg-clip-text text-transparent">Mengenal Divisi Kami</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="info-card bg-neutral-900 p-6 rounded-xl border border-neutral-800 text-center">
+                    <i class="fa-solid fa-lightbulb fa-2x text-red-500 mb-4"></i>
+                    <h3 class="font-bold text-lg mb-2 text-white">Minat dan Bakat</h3>
+                    <p class="text-sm text-neutral-400">Wadah untuk menyalurkan dan mengembangkan kreativitas serta potensi non-akademik mahasiswa.</p>
+                </div>
+                <div class="info-card bg-neutral-900 p-6 rounded-xl border border-neutral-800 text-center">
+                    <i class="fa-solid fa-users-gear fa-2x text-red-500 mb-4"></i>
+                    <h3 class="font-bold text-lg mb-2 text-white">Kaderisasi</h3>
+                    <p class="text-sm text-neutral-400">Membentuk karakter, kepemimpinan, dan rasa kekeluargaan antar anggota himpunan.</p>
+                </div>
+                <div class="info-card bg-neutral-900 p-6 rounded-xl border border-neutral-800 text-center">
+                    <i class="fa-solid fa-bullhorn fa-2x text-red-500 mb-4"></i>
+                    <h3 class="font-bold text-lg mb-2 text-white">Hubungan Masyarakat</h3>
+                    <p class="text-sm text-neutral-400">Jembatan komunikasi antara himpunan dengan pihak internal maupun eksternal kampus.</p>
+                </div>
+                <div class="info-card bg-neutral-900 p-6 rounded-xl border border-neutral-800 text-center">
+                    <i class="fa-solid fa-camera-retro fa-2x text-red-500 mb-4"></i>
+                    <h3 class="font-bold text-lg mb-2 text-white">Multimedia</h3>
+                    <p class="text-sm text-neutral-400">Bertanggung jawab atas dokumentasi, desain, dan konten kreatif untuk semua kegiatan himpunan.</p>
+                </div>
+                <div class="info-card bg-neutral-900 p-6 rounded-xl border border-neutral-800 text-center">
+                    <i class="fa-solid fa-book-open-reader fa-2x text-red-500 mb-4"></i>
+                    <h3 class="font-bold text-lg mb-2 text-white">Akademik</h3>
+                    <p class="text-sm text-neutral-400">Mendukung pengembangan prestasi akademik mahasiswa melalui berbagai program belajar.</p>
+                </div>
+                <div class="info-card bg-neutral-900 p-6 rounded-xl border border-neutral-800 text-center">
+                    <i class="fa-solid fa-chalkboard-user fa-2x text-red-500 mb-4"></i>
+                    <h3 class="font-bold text-lg mb-2 text-white">Kepelatihan</h3>
+                    <p class="text-sm text-neutral-400">Menyiapkan dan melatih delegasi untuk berkompetisi di berbagai ajang perlombaan IT.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="text-center">
+            <h2 class="text-3xl md:text-4xl font-bold mb-12 text-center bg-gradient-to-r from-red-500 to-red-600 bg-clip-text text-transparent">Kata Mereka</h2>
+            <div class="flex flex-col md:flex-row justify-center gap-8">
+                <div class="bg-neutral-900 p-8 rounded-xl w-full md:w-2/5 border border-neutral-800">
+                    <p class="text-neutral-300 italic">"Himatif adalah wadah pengembangan kreatifitas dan kedisiplinan. Saya telah banyak berkembang didalamnya."</p>
+                    <p class="mt-4 font-bold text-red-500">- Alamsyah, Anggota 2023</p>
+                </div>
+                <div class="bg-neutral-900 p-8 rounded-xl w-full md:w-2/5 border border-neutral-800">
+                    <p class="text-neutral-300 italic">"Cara terbaik untuk melawan rasa takut adalah dengan menghadapi nya."</p>
+                    <p class="mt-4 font-bold text-red-500">- Ismi nabilah, Anggota 2024</p>
+                </div>
+                <div class="bg-neutral-900 p-8 rounded-xl w-full md:w-2/5 border border-neutral-800">
+                    <p class="text-neutral-300 italic">"sesuatu yang tidak di kerjakan akan terasa lebih ringan."</p>
+                    <p class="mt-4 font-bold text-red-500">- Bagas, Anggota 2024</p>
+                </div>
+                <div class="bg-neutral-900 p-8 rounded-xl w-full md:w-2/5 border border-neutral-800">
+                    <a href="https://www.instagram.com/syalwalyrh/"><p class="text-neutral-300 italic">"mau coba bikin yang gini? join dulu ga sii"</p>
+                    <p class="mt-4 font-bold text-red-500">- developer, Anggota 2024</p></a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-neutral-950 py-8 text-center text-neutral-500 text-sm mt-16 border-t border-neutral-800">
+        <div class="mb-4">
+            <a href="https://www.instagram.com/himatif.ulbi/" target="_blank" class="text-neutral-400 hover:text-red-500 transition-colors text-2xl">
+                <i class="fab fa-instagram"></i>
+            </a>
         </div>
-      </div>
-    </section>
-    <section class="text-center mt-12">
-      <h2 class="text-2xl font-bold mb-4 text-red-500">Kenapa Bergabung HIMATIF?</h2>
-      <p class="text-gray-300 max-w-2xl mx-auto">Dapatkan pengalaman organisasi, jaringan profesional, pelatihan softskill, dan kesempatan berkontribusi nyata di lingkungan kampus.</p>
-    </section>
-  </main>
-  <footer class="bg-gray-800 py-4 text-center text-gray-500 text-sm mt-10">
-    &copy; 2025 HIMATIF - Himpunan Mahasiswa Teknik Informatika
-  </footer>
+        <p>&copy; 2025 HIMATIF - Himpunan Mahasiswa Teknik Informatika</p>
+    </footer>
+
+    <script src="js/auth.js"></script>
+    <script src="js/main.js"></script>
 </body>
 </html>

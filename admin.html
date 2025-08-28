@@ -1,26 +1,550 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Dashboard - Pendaftaran HIMATIF</title>
-  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - HIMATIF</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <style>
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        body {
+            background-color: #000000;
+            background-image: radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.05) 1px, transparent 0);
+            background-size: 2rem 2rem;
+        }
+
+        .animate-fade-in {
+            opacity: 0;
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+        }
+
+        .date-input-dark-icon {
+            color-scheme: dark;
+        }
+
+        /* PERUBAHAN 1: Styling untuk panel aksi yang lebih modern */
+        #bulkActionPanel {
+            transition: all 0.3s ease-in-out;
+            transform: translateY(-100%);
+            opacity: 0;
+            max-height: 0;
+            overflow: hidden;
+        }
+
+        #bulkActionPanel.visible {
+            transform: translateY(0);
+            opacity: 1;
+            max-height: 200px; /* Sesuaikan jika perlu */
+            margin-bottom: 1.5rem; /* Menambahkan jarak saat panel muncul */
+        }
+    </style>
 </head>
-<body class="bg-gray-50 min-h-screen">
-  <header class="bg-white shadow">
-    <div class="container mx-auto px-4 py-4 flex justify-between items-center">
-      <div class="flex items-center gap-2">
-        <img src="logo.png" alt="HIMATIF" class="h-10">
-        <span class="font-bold text-xl text-blue-600">HIMATIF</span>
-      </div>
-      <button id="logoutBtn" class="px-4 py-2 rounded bg-red-500 text-white hover:bg-red-600">Logout</button>
+
+<body class="text-neutral-200 flex min-h-screen font-sans">
+
+    <aside
+        class="hidden lg:flex w-20 hover:w-64 bg-neutral-950 p-4 flex-col shadow-lg transition-all duration-300 ease-in-out group animate-fade-in border-r border-neutral-800">
+        <div class="flex items-center gap-4 mb-10 h-10">
+            <i class="fa-solid fa-user-shield fa-2x text-red-500 min-w-[32px] text-center"></i>
+            <span
+                class="font-bold text-xl bg-gradient-to-r from-red-500 to-red-600 bg-clip-text text-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">HIMATIF
+                ADMIN</span>
+        </div>
+
+        <div class="flex flex-col justify-between flex-1">
+            <nav class="flex flex-col gap-4">
+                <a href="admin.html"
+                    class="flex items-center gap-3 px-2 py-2 text-white bg-gradient-to-r from-red-600 to-red-800 rounded-lg h-12 shadow-md shadow-red-500/20">
+                    <i class="fa-solid fa-users fa-fw fa-lg min-w-[32px] text-center"></i>
+                    <span
+                        class="font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">Pendaftar</span>
+                </a>
+                <a href="admin-users.html"
+                    class="flex items-center gap-3 px-2 py-2 text-neutral-400 hover:bg-neutral-800 hover:text-white rounded-lg h-12">
+                    <i class="fa-solid fa-address-book fa-fw fa-lg min-w-[32px] text-center"></i>
+                    <span
+                        class="font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">Data
+                        Pengguna</span>
+                </a>
+                <a href="admin-info.html" class="flex items-center gap-3 px-2 py-2 text-neutral-400 hover:bg-neutral-800 hover:text-white rounded-lg h-12">
+                    <i class="fa-solid fa-bullhorn fa-fw fa-lg min-w-[32px] text-center"></i>
+                    <span class="font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">Kelola Informasi</span>
+                </a>
+            </nav>
+
+            <div>
+                <button onclick="logout()"
+                    class="w-full flex items-center gap-4 px-3 py-2 text-neutral-400 hover:bg-red-900/50 hover:text-white rounded-lg h-12">
+                    <i class="fa-solid fa-right-from-bracket fa-fw fa-lg min-w-[32px] text-center"></i>
+                    <span
+                        class="font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">Log
+                        Out</span>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <main class="flex-1 p-4 lg:p-8 animate-fade-in pb-24 lg:pb-8">
+        <h1 class="text-2xl lg:text-3xl font-bold text-red-600 mb-6">Daftar Calon Anggota</h1>
+        
+        <div id="bulkActionPanel" class="bg-neutral-900 p-4 rounded-xl border border-red-500/30 shadow-lg shadow-red-500/10 flex flex-col sm:flex-row gap-4 items-center">
+            <div class="flex items-center gap-3">
+                <span class="font-semibold text-red-400"><span id="selectedCount">0</span> pendaftar</span>
+                <span class="text-neutral-500">dipilih</span>
+            </div>
+            <div class="flex-grow flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+                 <select id="bulkStatusSelect" class="w-full sm:w-auto bg-neutral-800 border border-neutral-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-500">
+                    <option value="" disabled selected>Ubah status ke...</option>
+                    <option value="pending">Menunggu</option>
+                    <option value="interview">Wawancara</option>
+                    <option value="selection_1">Seleksi 1</option>
+                    <option value="selection_2">Seleksi 2</option>
+                    <option value="accepted">Diterima</option>
+                    <option value="rejected">Ditolak</option>
+                </select>
+                <button onclick="applyBulkAction()" class="w-full sm:w-auto px-5 py-2 rounded-md text-white font-semibold bg-gradient-to-r from-red-600 to-red-800 hover:scale-105 shadow-lg shadow-red-500/20 hover:shadow-red-500/40 transition-all duration-300">
+                    Terapkan
+                </button>
+            </div>
+        </div>
+
+
+        <div class="bg-neutral-900 p-4 rounded-xl border border-neutral-800 mb-6 flex flex-col md:flex-row gap-4">
+            <div class="relative flex-grow">
+                <input type="text" id="searchInput" placeholder="Cari Nama atau NIM..."
+                    class="w-full pl-10 pr-4 py-2 bg-neutral-800 border border-neutral-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500">
+                <i class="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-neutral-500"></i>
+            </div>
+            <select id="statusFilter"
+                class="w-full md:w-48 bg-neutral-800 border border-neutral-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-500">
+                <option value="">Semua Status</option>
+                <option value="pending">Menunggu</option>
+                <option value="interview">Wawancara</option>
+                <option value="selection_1">Seleksi 1</option>
+                <option value="selection_2">Seleksi 2</option>
+                <option value="accepted">Diterima</option>
+                <option value="rejected">Ditolak</option>
+            </select>
+            <select id="divisionFilter"
+                class="w-full md:w-56 bg-neutral-800 border border-neutral-700 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-red-500">
+                <option value="">Semua Divisi</option>
+                <option value="Minat dan Bakat">Minat dan Bakat</option>
+                <option value="Kaderisasi">Kaderisasi</option>
+                <option value="Hubungan Masyarakat">Hubungan Masyarakat</option>
+                <option value="Multimedia">Multimedia</option>
+                <option value="Akademik">Akademik</option>
+                <option value="Kepelatihan">Kepelatihan</option>
+            </select>
+        </div>
+        
+        <div class="bg-neutral-900 rounded-xl border border-neutral-800 overflow-hidden">
+            <div class="hidden lg:flex border-b border-neutral-700 text-neutral-400 font-semibold items-center">
+                <div class="p-4 w-16 text-center">
+                    <input type="checkbox" id="selectAllCheckbox" class="h-5 w-5 bg-neutral-700 border-neutral-600 text-red-600 focus:ring-red-500 rounded cursor-pointer">
+                </div>
+                <div class="p-4 flex-1">Nama</div>
+                <div class="p-4 w-1/4">Divisi Pilihan</div>
+                <div class="p-4 w-1/4 text-center">Status & Aksi</div>
+            </div>
+            <div id="registrationsContainer" class="divide-y divide-neutral-800">
+                <div class="p-4 text-center text-neutral-500">Memuat data...</div>
+            </div>
+        </div>
+    </main>
+
+    <div id="detailsModal" class="fixed inset-0 z-50 flex items-center justify-center hidden modal-backdrop p-4">
+        <div
+            class="bg-neutral-950/70 backdrop-blur-lg rounded-2xl shadow-2xl shadow-red-900/10 max-w-2xl w-full p-6 lg:p-8 border border-neutral-800 max-h-[90vh] flex flex-col">
+            <div class="flex justify-between items-center mb-6 flex-shrink-0">
+                <h2 id="modalTitle"
+                    class="text-xl lg:text-2xl font-bold bg-gradient-to-r from-red-500 to-red-600 bg-clip-text text-transparent">
+                    Kelola Pendaftar</h2>
+                <button onclick="closeModal()" class="text-neutral-500 hover:text-white text-3xl transition-colors">&times;</button>
+            </div>
+            <div class="overflow-y-auto pr-2 space-y-4">
+                <div class="space-y-2 text-neutral-300">
+                    <p><strong>Nama:</strong> <span id="modalName"></span></p>
+                    <p><strong>NIM:</strong> <span id="modalNim"></span></p>
+                    <div class="pt-2">
+                        <p><strong>Motivasi:</strong></p>
+                        <p id="modalMotivation" class="text-sm text-neutral-400 bg-neutral-900 p-3 rounded-md mt-1 border border-neutral-800"></p>
+                    </div>
+                    <div>
+                        <p><strong>Visi & Misi:</strong></p>
+                        <p id="modalVisionMission" class="text-sm text-neutral-400 bg-neutral-900 p-3 rounded-md mt-1 border border-neutral-800"></p>
+                    </div>
+                </div>
+                <form id="editForm" class="border-t border-neutral-800 pt-6">
+                    <div class="space-y-4">
+                        <div>
+                            <label for="modalStatus" class="block text-sm font-medium text-neutral-300">Ubah Status Pendaftaran</label>
+                            <select id="modalStatus" name="status" class="mt-1 w-full px-4 py-2.5 border border-neutral-700 bg-neutral-900 text-neutral-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all">
+                                <option value="pending">Menunggu</option>
+                                <option value="interview">Wawancara</option>
+                                <option value="selection_1">Seleksi 1</option>
+                                <option value="selection_2">Seleksi 2</option>
+                                <option value="accepted">Diterima</option>
+                                <option value="rejected">Ditolak</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="modalInterview" class="block text-sm font-medium text-neutral-300">Atur Jadwal Wawancara</label>
+                            <input type="date" id="modalInterview" name="interview_schedule" class="date-input-dark-icon mt-1 w-full px-4 py-2.5 border border-neutral-700 bg-neutral-900 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all" disabled>
+                        </div>
+                        <div>
+                            <label for="modalLocation" class="block text-sm font-medium text-neutral-300">Lokasi Wawancara</label>
+                            <input type="text" id="modalLocation" name="interview_location" placeholder="Online (Google Meet) / Offline (Sekre)" class="mt-1 w-full px-4 py-2.5 border border-neutral-700 bg-neutral-900 rounded-lg placeholder:text-neutral-500 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all" disabled>
+                        </div>
+                    </div>
+                    <div class="mt-8 flex justify-between items-center">
+                    <div class="flex gap-4">
+                        <a id="modalCvLink" href="#" target="_blank" class="px-5 py-2 rounded-md font-medium bg-transparent border border-neutral-600 text-neutral-300 hover:bg-neutral-800 hover:text-white transition-colors">Download CV</a>
+                        
+                        <a id="modalCertificateLink" href="#" target="_blank" class="px-5 py-2 rounded-md font-medium bg-transparent border border-blue-600 text-neutral-300 hover:bg-blue-900/50 hover:text-white transition-colors" style="display: none;">Download Sertifikat</a>
+                    </div>
+                    <button type="submit" class="px-5 py-2 rounded-md text-white font-semibold bg-gradient-to-r from-red-600 to-red-800 hover:scale-105 shadow-lg shadow-red-500/20 hover:shadow-red-500/40 transition-all">Simpan Perubahan</button>
+                </div>
+                </form>
+            </div>
+        </div>
     </div>
-  </header>
-  <main class="container mx-auto px-4 py-8">
-    <h1 class="text-2xl font-bold mb-6 text-blue-700">Daftar Peserta</h1>
-    <div id="tableContainer" class="bg-white rounded shadow p-6"></div>
-  </main>
-  <script src="js/admin.js"></script>
+
+    <nav class="lg:hidden fixed bottom-0 left-0 right-0 bg-neutral-950 border-t border-neutral-800 flex justify-around">
+        <a href="admin.html" class="flex flex-col items-center justify-center w-full h-16 text-red-500">
+            <i class="fa-solid fa-users fa-lg"></i>
+            <span class="text-xs mt-1.5">Pendaftar</span>
+        </a>
+        <a href="admin-users.html"
+            class="flex flex-col items-center justify-center w-full h-16 text-neutral-400 hover:text-white transition-colors">
+            <i class="fa-solid fa-address-book fa-lg"></i>
+            <span class="text-xs mt-1.5">Pengguna</span>
+        </a>
+        <a href="admin-info.html" class="flex flex-col items-center justify-center w-full h-16 text-neutral-400 hover:text-white">
+            <i class="fa-solid fa-bullhorn fa-lg"></i>
+            <span class="text-xs mt-1.5">Informasi</span>
+        </a>
+        <button onclick="logout()"
+            class="flex flex-col items-center justify-center w-full h-16 text-neutral-400 hover:text-white transition-colors">
+            <i class="fa-solid fa-right-from-bracket fa-lg"></i>
+            <span class="text-xs mt-1.5">Logout</span>
+        </button>
+    </nav>
+
+    <script src="js/auth.js"></script>
+    <script src="js/dashboard.js"></script>
+    <script>
+        let allRegistrations = [];
+        let currentEditingId = null;
+        const modal = document.getElementById('detailsModal');
+        const statusSelect = document.getElementById('modalStatus');
+        const interviewInput = document.getElementById('modalInterview');
+        const locationInput = document.getElementById('modalLocation');
+        const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+        const bulkActionPanel = document.getElementById('bulkActionPanel');
+        const selectedCountSpan = document.getElementById('selectedCount');
+        const bulkStatusSelect = document.getElementById('bulkStatusSelect');
+
+        // PERUBAHAN 4: Modifikasi renderRegistrations untuk tampilan responsif
+        function renderRegistrations(registrationsToRender) {
+            const container = document.getElementById('registrationsContainer');
+            container.innerHTML = '';
+
+            if (registrationsToRender.length === 0) {
+                container.innerHTML = '<div class="p-4 text-center text-neutral-400">Tidak ada pendaftar yang cocok dengan filter.</div>';
+                return;
+            }
+
+            registrationsToRender.forEach(reg => {
+                const item = document.createElement('div');
+                // Tampilan Card untuk Mobile, Flex untuk Desktop
+                item.className = 'p-4 flex flex-col lg:flex-row lg:items-center space-y-4 lg:space-y-0';
+                item.innerHTML = `
+                <div class="flex items-center gap-4 lg:w-16 lg:flex-shrink-0">
+                    <input type="checkbox" data-id="${reg.id}" class="reg-checkbox h-5 w-5 bg-neutral-700 border-neutral-600 text-red-600 focus:ring-red-500 rounded cursor-pointer">
+                </div>
+                <div class="flex-1">
+                    <div class="font-semibold text-white">${reg.name}</div>
+                    <div class="text-sm text-neutral-400">${reg.nim}</div>
+                </div>
+
+                <div class="w-full lg:w-1/4 text-sm">
+                    <span class="font-semibold text-neutral-400 lg:hidden">Divisi: </span>${reg.division1} / ${reg.division2}
+                </div>
+                
+                <div class="w-full lg:w-1/4 flex flex-col lg:flex-row lg:justify-end lg:items-center gap-2">
+                    <div class="text-center font-semibold capitalize bg-neutral-800 py-2 px-3 rounded-md">
+                        ${reg.status}
+                    </div>
+                    <div class="flex gap-2 justify-center mt-2 lg:mt-0">
+                        <button onclick="showModal('${reg.id}')" class="flex-1 px-3 py-2 text-sm bg-blue-600 rounded hover:bg-blue-700 transition-colors">Kelola</button>
+                        <button onclick="deleteRegistration('${reg.id}', '${reg.name}')" class="flex-1 px-3 py-2 text-sm bg-red-600 rounded hover:bg-red-700 transition-colors">Hapus</button>
+                    </div>
+                </div>
+            `;
+                container.appendChild(item);
+            });
+            addCheckboxListeners();
+        }
+
+        function applyFilters() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const statusTerm = document.getElementById('statusFilter').value;
+            const divisionTerm = document.getElementById('divisionFilter').value;
+
+            let filteredRegistrations = allRegistrations.filter(reg => {
+                const nameMatch = reg.name.toLowerCase().includes(searchTerm);
+                const nimMatch = reg.nim.toLowerCase().includes(searchTerm);
+                const statusMatch = statusTerm ? reg.status === statusTerm : true;
+                const divisionMatch = divisionTerm ? (reg.division1 === divisionTerm || reg.division2 === divisionTerm) : true;
+
+                return (nameMatch || nimMatch) && statusMatch && divisionMatch;
+            });
+
+            renderRegistrations(filteredRegistrations);
+            updateBulkActionPanel();
+        }
+
+        function closeModal() { modal.classList.add('hidden'); }
+
+        function showModal(regId) {
+            currentEditingId = regId;
+            const reg = allRegistrations.find(r => r.id === regId);
+            if (reg) {
+                document.getElementById('modalTitle').innerText = `Kelola: ${reg.name}`;
+                document.getElementById('modalName').innerText = reg.name;
+                document.getElementById('modalNim').innerText = reg.nim;
+                document.getElementById('modalMotivation').innerText = reg.motivation;
+                document.getElementById('modalVisionMission').innerText = reg.vision_mission;
+            
+                const cvLink = document.getElementById('modalCvLink');
+                cvLink.href = reg.cv_url; 
+                    
+                const certificateLink = document.getElementById('modalCertificateLink');
+                if (reg.certificate_url) {
+                    certificateLink.href = reg.certificate_url;
+                    certificateLink.style.display = 'inline-block';
+                } else {
+                    certificateLink.style.display = 'none';
+                }
+                
+                statusSelect.value = reg.status;
+                interviewInput.value = reg.interview_schedule ? reg.interview_schedule.slice(0, 10) : '';
+                locationInput.value = reg.interview_location || '';
+                
+                statusSelect.dispatchEvent(new Event('change'));
+                modal.classList.remove('hidden');
+            }
+        }
+
+        async function loadRegistrations() {
+            try {
+                const token = getToken();
+                const response = await fetch('http://localhost:8080/api/admin/registrations-with-details', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!response.ok) throw new Error('Gagal memuat data pendaftar.');
+
+                allRegistrations = await response.json();
+                applyFilters();
+            } catch (error) {
+                document.getElementById('registrationsContainer').innerHTML = `<div class="p-4 text-center text-red-500">${error.message}</div>`;
+            }
+        }
+
+        statusSelect.addEventListener('change', () => {
+            if (statusSelect.value === 'interview') {
+                interviewInput.disabled = false;
+                locationInput.disabled = false;
+            } else {
+                interviewInput.disabled = true;
+                locationInput.disabled = true;
+                interviewInput.value = '';
+                locationInput.value = '';
+            }
+        });
+
+        document.getElementById('editForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!currentEditingId) return;
+            const updatedData = {
+                status: statusSelect.value,
+                interview_schedule: interviewInput.value,
+                interview_location: locationInput.value,
+            };
+            try {
+                const token = getToken();
+                const response = await fetch(`http://localhost:8080/api/admin/registrations/${currentEditingId}`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(updatedData)
+                });
+                if (!response.ok) throw new Error('Gagal menyimpan perubahan.');
+                await Swal.fire('Berhasil!', 'Data pendaftar telah diperbarui.', 'success');
+                closeModal();
+                loadRegistrations();
+            } catch (error) {
+                Swal.fire('Gagal!', error.message, 'error');
+            }
+        });
+
+        function addCheckboxListeners() {
+            const checkboxes = document.querySelectorAll('.reg-checkbox');
+            checkboxes.forEach(cb => {
+                cb.addEventListener('change', updateBulkActionPanel);
+            });
+        }
+
+        // PERUBAHAN 5: Logika untuk menampilkan panel dengan animasi
+        function updateBulkActionPanel() {
+            const selectedCheckboxes = document.querySelectorAll('.reg-checkbox:checked');
+            const count = selectedCheckboxes.length;
+            
+            if (count > 0) {
+                bulkActionPanel.classList.add('visible');
+                selectedCountSpan.textContent = count;
+            } else {
+                bulkActionPanel.classList.remove('visible');
+            }
+
+            const totalVisibleCheckboxes = document.querySelectorAll('.reg-checkbox').length;
+            selectAllCheckbox.checked = (totalVisibleCheckboxes > 0 && count === totalVisibleCheckboxes);
+        }
+
+        selectAllCheckbox.addEventListener('change', () => {
+            const checkboxes = document.querySelectorAll('.reg-checkbox');
+            checkboxes.forEach(cb => {
+                cb.checked = selectAllCheckbox.checked;
+            });
+            updateBulkActionPanel();
+        });
+
+        async function applyBulkAction() {
+            const selectedCheckboxes = document.querySelectorAll('.reg-checkbox:checked');
+            const selectedIds = Array.from(selectedCheckboxes).map(cb => cb.dataset.id);
+            const newStatus = bulkStatusSelect.value;
+
+            if (selectedIds.length === 0 || !newStatus) {
+                Swal.fire('Aksi Tidak Lengkap', 'Pilih minimal satu pendaftar dan tentukan status baru.', 'warning');
+                return;
+            }
+
+            const result = await Swal.fire({
+                title: 'Konfirmasi Aksi',
+                text: `Anda akan mengubah status ${selectedIds.length} pendaftar menjadi "${newStatus}". Lanjutkan?`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                confirmButtonText: 'Ya, Lanjutkan!',
+                cancelButtonText: 'Batal',
+            });
+
+            if (result.isConfirmed) {
+                try {
+                    const token = getToken();
+                    const response = await fetch('http://localhost:8080/api/admin/registrations/bulk-update', {
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({ ids: selectedIds, status: newStatus })
+                    });
+
+                    if (!response.ok) throw new Error('Gagal melakukan aksi massal.');
+
+                    await Swal.fire('Berhasil!', `Status ${selectedIds.length} pendaftar telah diubah.`, 'success');
+                    loadRegistrations();
+                    selectAllCheckbox.checked = false;
+                    updateBulkActionPanel();
+
+                } catch (error) {
+                    Swal.fire('Gagal!', error.message, 'error');
+                }
+            }
+        }
+
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const userData = await fetchUserData();
+            if (!userData || userData.role !== 'admin') {
+                alert("Akses ditolak. Halaman ini khusus untuk Admin.");
+                window.location.href = 'index.html';
+                return;
+            }
+            loadRegistrations();
+
+            document.getElementById('searchInput').addEventListener('input', applyFilters);
+            document.getElementById('statusFilter').addEventListener('change', applyFilters);
+            document.getElementById('divisionFilter').addEventListener('change', applyFilters);
+        });
+
+        async function deleteRegistration(regId, regName) {
+            const result = await Swal.fire({
+                title: 'Anda Yakin?',
+                text: `Anda akan menghapus pendaftaran atas nama "${regName}". Aksi ini tidak dapat dibatalkan.`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Ya, hapus!',
+                cancelButtonText: 'Batal',
+                background: '#1f1f1f',
+                color: '#e5e5e5'
+            });
+
+            if (result.isConfirmed) {
+                try {
+                    const token = getToken();
+                    const response = await fetch(`http://localhost:8080/api/admin/registrations/${regId}`, {
+                        method: 'DELETE',
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (!response.ok) {
+                        const errData = await response.json();
+                        throw new Error(errData.error || 'Gagal menghapus pendaftaran.');
+                    }
+                    await Swal.fire({
+                        title: 'Dihapus!',
+                        text: 'Pendaftaran telah berhasil dihapus.',
+                        icon: 'success',
+                        background: '#1f1f1f',
+                        color: '#e5e5e5'
+                    });
+                    loadRegistrations();
+                } catch (error) {
+                    await Swal.fire({
+                        title: 'Gagal!',
+                        text: error.message,
+                        icon: 'error',
+                        background: '#1f1f1f',
+                        color: '#e5e5e5'
+                    });
+                }
+            }
+        }
+    </script>
 </body>
+
 </html>

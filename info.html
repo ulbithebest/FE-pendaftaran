@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF--8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Informasi - HIMATIF</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <style>
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        body { background-color: #000000; background-image: radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.05) 1px, transparent 0); background-size: 2rem 2rem; }
+        .content-fade { animation: fadeIn 0.5s ease-out forwards; }
+        .info-card { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+        .info-card:hover { transform: translateY(-5px); box-shadow: 0 5px 15px rgba(239, 68, 68, 0.1); }
+    </style>
+</head>
+<body class="bg-black text-gray-200 flex min-h-screen">
+
+    <aside class="hidden lg:flex w-20 hover:w-64 bg-neutral-950 p-4 flex-col shadow-lg transition-all duration-300 ease-in-out group border-r border-neutral-800">
+        <div class="flex items-center gap-4 mb-10 h-10">
+            <i class="fa-solid fa-layer-group fa-2x text-red-500 min-w-[32px] text-center"></i>
+            <span class="font-bold text-xl bg-gradient-to-r from-red-500 to-red-600 bg-clip-text text-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">HIMATIF</span>
+        </div>
+        <div class="flex flex-col justify-between flex-1">
+            <nav class="flex flex-col gap-4">
+                <a href="user.html" class="flex items-center gap-3 px-2 py-2 text-neutral-400 hover:bg-neutral-800 hover:text-white rounded-lg h-12">
+                    <i class="fa-solid fa-house fa-fw fa-lg min-w-[32px] text-center"></i>
+                    <span class="font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">Home</span>
+                </a>
+                <a href="profile.html" class="flex items-center gap-3 px-2 py-2 text-neutral-400 hover:bg-neutral-800 hover:text-white rounded-lg h-12">
+                    <i class="fa-solid fa-user fa-fw fa-lg min-w-[32px] text-center"></i>
+                    <span class="font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">Profil</span>
+                </a>
+                <a href="info.html" class="flex items-center gap-3 px-2 py-2 text-white bg-gradient-to-r from-red-600 to-red-800 rounded-lg h-12 shadow-md shadow-red-500/20">
+                    <i class="fa-solid fa-bullhorn fa-fw fa-lg min-w-[32px] text-center"></i>
+                    <span class="font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">Informasi</span>
+                </a>
+                <a href="form.html" class="flex items-center gap-3 px-2 py-2 text-neutral-400 hover:bg-neutral-800 hover:text-white rounded-lg h-12">
+                    <i class="fa-solid fa-file-lines fa-fw fa-lg min-w-[32px] text-center"></i>
+                    <span class="font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">Form Pendaftaran</span>
+                </a>
+            </nav>
+            <div>
+                <button onclick="logout()" class="w-full flex items-center gap-3 px-2 py-2 text-neutral-400 hover:bg-red-900/50 hover:text-white rounded-lg h-12">
+                    <i class="fa-solid fa-right-from-bracket fa-fw fa-lg min-w-[32px] text-center"></i>
+                    <span class="font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">Log Out</span>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <main class="flex-1 p-4 lg:p-8 content-fade pb-24 lg:pb-8">
+        <h1 class="text-3xl lg:text-4xl font-bold bg-gradient-to-r from-red-500 to-red-600 bg-clip-text text-transparent mb-8">Papan Informasi</h1>
+        <div id="infoContainer" class="space-y-6">
+            <div class="p-4 text-center text-neutral-500">Memuat informasi...</div>
+        </div>
+    </main>
+    
+    <nav class="lg:hidden fixed bottom-0 left-0 right-0 bg-neutral-950 border-t border-neutral-800 flex justify-around">
+        <a href="user.html" class="flex flex-col items-center justify-center w-full h-16 text-neutral-400"><i class="fa-solid fa-house fa-lg"></i><span class="text-xs mt-1.5">Home</span></a>
+        <a href="profile.html" class="flex flex-col items-center justify-center w-full h-16 text-neutral-400"><i class="fa-solid fa-user fa-lg"></i><span class="text-xs mt-1.5">Profil</span></a>
+        <a href="info.html" class="flex flex-col items-center justify-center w-full h-16 text-red-500"><i class="fa-solid fa-bullhorn fa-lg"></i><span class="text-xs mt-1.5">Informasi</span></a>
+        <a href="form.html" id="formBottomLink" class="flex flex-col items-center justify-center w-full h-16 text-neutral-400"><i class="fa-solid fa-file-lines fa-lg"></i><span class="text-xs mt-1.5">Formulir</span></a>
+        <button onclick="logout()" class="flex flex-col items-center justify-center w-full h-16 text-neutral-400"><i class="fa-solid fa-right-from-bracket fa-lg"></i><span class="text-xs mt-1.5">Logout</span></button>
+    </nav>
+
+    <script src="js/auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const token = getToken();
+            if (!token) {
+                window.location.href = 'login.html';
+                return;
+            }
+
+            const container = document.getElementById('infoContainer');
+            try {
+                const response = await fetch('http://localhost:8080/api/info', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!response.ok) throw new Error('Gagal mengambil data.');
+
+                const allInfo = await response.json();
+                container.innerHTML = '';
+
+                if (allInfo.length === 0) {
+                    container.innerHTML = '<div class="p-6 text-center text-neutral-400 bg-neutral-900 rounded-lg border border-neutral-800">Belum ada informasi yang tersedia saat ini.</div>';
+                    return;
+                }
+
+                allInfo.forEach(info => {
+                    const date = new Date(info.created_at);
+                    const formattedDate = date.toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+                    const item = document.createElement('div');
+                    item.className = 'info-card bg-neutral-900 p-6 rounded-xl border border-neutral-800';
+                    item.innerHTML = `
+                        <h2 class="font-bold text-xl text-red-500">${info.title}</h2>
+                        <p class="text-xs text-neutral-500 mb-4">Diunggah pada: ${formattedDate}</p>
+                        <p class="text-neutral-300 whitespace-pre-wrap leading-relaxed">${info.content}</p>
+                    `;
+                    container.appendChild(item);
+                });
+
+            } catch (error) {
+                container.innerHTML = `<div class="p-4 text-center text-red-500">${error.message}</div>`;
+            }
+        });
+    </script>
+</body>
+</html>

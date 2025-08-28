@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <style>
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        body {
+            background-color: #000000;
+            background-image: radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.05) 1px, transparent 0);
+            background-size: 2rem 2rem;
+        }
+
+        .content-fade {
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+    </style>
+</head>
+
+<body class="bg-black text-gray-200 min-h-screen flex">
+
+    <aside
+        class="hidden lg:flex w-20 hover:w-64 bg-neutral-950 p-4 flex-col shadow-lg transition-all duration-300 ease-in-out group border-r border-neutral-800">
+        <div class="flex items-center gap-4 mb-10 h-10">
+            <i class="fa-solid fa-layer-group fa-2x text-red-500 min-w-[32px] text-center"></i>
+            <span
+                class="font-bold text-xl bg-gradient-to-r from-red-500 to-red-600 bg-clip-text text-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">HIMATIF</span>
+        </div>
+
+        <div class="flex flex-col justify-between flex-1">
+            <nav class="flex flex-col gap-4">
+                <a href="user.html"
+                    class="flex items-center gap-3 px-2 py-2 text-white bg-gradient-to-r from-red-600 to-red-800 rounded-lg h-12 shadow-md shadow-red-500/20">
+                    <i class="fa-solid fa-house fa-fw fa-lg min-w-[32px] text-center"></i>
+                    <span
+                        class="font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">Home</span>
+                </a>
+                <a href="profile.html"
+                    class="flex items-center gap-3 px-2 py-2 text-neutral-400 hover:bg-neutral-800 hover:text-white rounded-lg h-12">
+                    <i class="fa-solid fa-user fa-fw fa-lg min-w-[32px] text-center"></i>
+                    <span
+                        class="font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">Profil</span>
+                </a>
+                <a href="info.html" class="flex items-center gap-3 px-2 py-2 text-neutral-400 hover:bg-neutral-800 hover:text-white rounded-lg h-12">
+                    <i class="fa-solid fa-bullhorn fa-fw fa-lg min-w-[32px] text-center"></i>
+                    <span class="font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">Informasi</span>
+                </a>
+                <a href="form.html"
+                    class="flex items-center gap-3 px-2 py-2 text-neutral-400 hover:bg-neutral-800 hover:text-white rounded-lg h-12">
+                    <i class="fa-solid fa-file-lines fa-fw fa-lg min-w-[32px] text-center"></i>
+                    <span
+                        class="font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">Form
+                        Pendaftaran</span>
+                </a>
+            </nav>
+
+            <div>
+                <button onclick="logout()"
+                    class="w-full flex items-center gap-3 px-2 py-2 text-neutral-400 hover:bg-red-900/50 hover:text-white rounded-lg h-12">
+                    <i class="fa-solid fa-right-from-bracket fa-fw fa-lg min-w-[32px] text-center"></i>
+                    <span
+                        class="font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">Log
+                        Out</span>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <main class="flex-1 p-4 lg:p-8 content-fade pb-24 lg:pb-8">
+        <div
+            class="p-6 lg:p-8 rounded-xl bg-gradient-to-r from-red-600 to-red-800 text-white shadow-lg shadow-red-500/10 mb-8">
+            <h1 id="welcomeMessage" class="text-2xl lg:text-3xl font-bold"></h1>
+            <p class="text-red-100 mt-1">Selamat datang kembali! Lihat status pendaftaran dan informasi Anda di sini.
+            </p>
+        </div>
+
+        <div id="statusCards" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="bg-neutral-900 p-6 rounded-xl border border-neutral-800">
+                <h3 class="text-neutral-400 text-sm font-medium">Status Pendaftaran</h3>
+                <p id="statusText" class="text-2xl font-bold text-yellow-400 mt-1">Memuat...</p>
+            </div>
+            <div class="bg-neutral-900 p-6 rounded-xl border border-neutral-800">
+                <h3 class="text-neutral-400 text-sm font-medium">Jadwal Wawancara</h3>
+                <p id="interviewText" class="text-2xl font-bold mt-1">Memuat...</p>
+            </div>
+            <div class="bg-neutral-900 p-6 rounded-xl border border-neutral-800">
+                <h3 class="text-neutral-400 text-sm font-medium">Lokasi Wawancara</h3>
+                <p id="locationText" class="text-2xl font-bold mt-1">Memuat...</p>
+            </div>
+            <div class="bg-neutral-900 p-6 rounded-xl border border-neutral-800">
+                <h3 class="text-neutral-400 text-sm font-medium">Divisi Pilihan</h3>
+                <p id="divisionText" class="text-2xl font-bold mt-1">Memuat...</p>
+            </div>
+        </div>
+
+        <div id="actionBox" class="bg-neutral-900 p-6 rounded-xl border border-red-500/50" style="display: none;">
+            <h2 class="text-xl font-semibold mb-2 text-red-500">Aksi Cepat</h2>
+            <p class="text-neutral-300 mb-4">Anda belum melengkapi formulir pendaftaran himpunan. Silakan lengkapi data
+                diri, motivasi, dan unggah CV Anda.</p>
+            <a href="form.html"
+                class="inline-block px-6 py-2 rounded-md text-white font-semibold bg-gradient-to-r from-red-600 to-red-800 hover:scale-105 shadow-lg shadow-red-500/20 hover:shadow-red-500/40 transition-all">
+                Lengkapi Formulir Sekarang
+            </a>
+        </div>
+
+        <div id="infoBox" class="bg-neutral-900 p-6 rounded-xl border border-green-500/50" style="display: none;">
+            <div class="flex items-center gap-4">
+                <div class="text-green-400">
+                    <i class="fa-solid fa-check-circle fa-2x"></i>
+                </div>
+                <div>
+                    <h2 class="text-xl font-semibold text-green-400">Pendaftaran Terkirim!</h2>
+                    <p class="text-neutral-300 mt-1">Anda telah berhasil mengisi formulir pendaftaran. Nantikan
+                        informasi selanjutnya mengenai status Anda.<br>
+                        Jika ada pertanyaan, silakan hubungi admin <a
+                            href="https://wa.me/6283137760847?text=Jangan%20lupa%205S%20nya%20yaa%20teman-teman%20ku%20tersayang.%20-Developer"
+                            target="_blank" rel="noopener noreferrer"><strong class="text-white hover:underline">DI
+                                SINI</strong></a>.</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <nav class="lg:hidden fixed bottom-0 left-0 right-0 bg-neutral-950 border-t border-neutral-800 flex justify-around">
+    <a href="user.html" class="flex flex-col items-center justify-center w-full h-16 text-red-500">
+        <i class="fa-solid fa-house fa-lg"></i>
+        <span class="text-xs mt-1.5">Home</span>
+    </a>
+    <a href="profile.html" class="flex flex-col items-center justify-center w-full h-16 text-neutral-400 hover:text-white transition-colors">
+        <i class="fa-solid fa-user fa-lg"></i>
+        <span class="text-xs mt-1.5">Profil</span>
+    </a>
+    <a href="info.html" class="flex flex-col items-center justify-center w-full h-16 text-neutral-400 hover:text-white">
+        <i class="fa-solid fa-bullhorn fa-lg"></i>
+        <span class="text-xs mt-1.5">Informasi</span>
+    </a>
+    <a href="form.html" id="formBottomLink" class="flex flex-col items-center justify-center w-full h-16 text-neutral-400 hover:text-white transition-colors">
+        <i class="fa-solid fa-file-lines fa-lg"></i>
+        <span class="text-xs mt-1.5">Formulir</span>
+    </a>
+    <button onclick="logout()" class="flex flex-col items-center justify-center w-full h-16 text-neutral-400 hover:text-white transition-colors">
+        <i class="fa-solid fa-right-from-bracket fa-lg"></i>
+        <span class="text-xs mt-1.5">Logout</span>
+    </button>
+</nav>
+
+
+    <script src="js/auth.js"></script>
+    <script src="js/dashboard.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            const userData = await fetchUserData();
+            if (!userData) {
+                alert("Anda harus login untuk mengakses halaman ini.");
+                window.location.href = 'login.html';
+                return;
+            }
+
+            document.getElementById('welcomeMessage').innerText = `Halo, ${userData.name}!`;
+
+            const statusText = document.getElementById('statusText');
+            const interviewText = document.getElementById('interviewText');
+            const divisionText = document.getElementById('divisionText');
+            const locationText = document.getElementById('locationText');
+            const actionBox = document.getElementById('actionBox');
+            const infoBox = document.getElementById('infoBox');
+            const formSidebarLink = document.querySelector('aside a[href="form.html"]'); // Link di sidebar
+            const formBottomLink = document.getElementById('formBottomLink'); // Link di nav bawah
+
+            async function updateDashboardData() {
+                try {
+                    const token = getToken();
+                    if (!token) return;
+
+                    const regResponse = await fetch('http://localhost:8080/api/user/my-registration', {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+
+                    if (regResponse.status === 200) {
+                        const regData = await regResponse.json();
+
+                        statusText.innerText = regData.status || 'Menunggu';
+                        divisionText.innerHTML = `${regData.division1} <span class="text-gray-400 text-lg">/ ${regData.division2}</span>`;
+                        locationText.innerText = regData.interview_location || 'Belum Ada';
+
+                        if (regData.interview_schedule) {
+                            const date = new Date(regData.interview_schedule);
+                            interviewText.innerText = date.toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
+                        } else {
+                            interviewText.innerText = 'Belum Ada';
+                        }
+
+                        actionBox.style.display = 'none';
+                        infoBox.style.display = 'block';
+                        // Sembunyikan kedua link formulir
+                        if (formSidebarLink) formSidebarLink.style.display = 'none';
+                        if (formBottomLink) formBottomLink.style.display = 'none';
+
+                    } else {
+                        statusText.innerText = 'Belum Mendaftar';
+                        interviewText.innerText = 'Belum Ada';
+                        divisionText.innerText = 'Belum Ada';
+                        locationText.innerText = 'Belum Ada';
+
+                        actionBox.style.display = 'block';
+                        infoBox.style.display = 'none';
+                        // Tampilkan kembali kedua link formulir
+                        if (formSidebarLink) formSidebarLink.style.display = 'flex';
+                        if (formBottomLink) formBottomLink.style.display = 'flex';
+                    }
+                } catch (error) {
+                    console.error("Gagal memperbarui data pendaftaran:", error);
+                }
+            }
+
+            updateDashboardData();
+            setInterval(updateDashboardData, 5000);
+        });
+    </script>
+</body>
+
+</html>
