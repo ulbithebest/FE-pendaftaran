@@ -6,7 +6,7 @@
 
 Selamat datang di antarmuka frontend untuk Aplikasi Pendaftaran Anggota Baru HIMATIF! Dibangun dengan **HTML, Tailwind CSS, dan JavaScript murni**, aplikasi ini dirancang untuk memberikan pengalaman pengguna yang modern, responsif, dan intuitif.
 
-**Live Demo:** [https://syalwa.github.io/pendaftaran-frontend/](https://syalwa.github.io/pendaftaran-frontend/) *(Catatan: Backend harus aktif agar semua fungsionalitas berjalan).*
+**Live Demo:** [https://svalvva.github.io/pendaftaran-frontend/](https://svalvva.github.io/pendaftaran-frontend/) *(Catatan: Backend harus aktif agar semua fungsionalitas berjalan).*
 
 ---
 
@@ -31,11 +31,11 @@ Selamat datang di antarmuka frontend untuk Aplikasi Pendaftaran Anggota Baru HIM
 
 ## 🛠️ Cara Menjalankan Secara Lokal
 
-Antarmuka ini membutuhkan layanan backend untuk dapat berfungsi sepenuhnya. Pastikan [**Backend Pendaftaran HIMATIF**](https://github.com/syalwa/pendaftaran-backend) sudah berjalan terlebih dahulu.
+Antarmuka ini membutuhkan layanan backend untuk dapat berfungsi sepenuhnya. Pastikan [**Backend Pendaftaran HIMATIF**](https://github.com/svalvva/pendaftaran-backend) sudah berjalan terlebih dahulu.
 
 1.  **Clone repository ini:**
     ```bash
-    git clone [https://github.com/syalwa/pendaftaran-frontend.git](https://github.com/syalwa/pendaftaran-frontend.git)
+    git clone [https://github.com/svalvva/pendaftaran-frontend.git](https://github.com/svalvva/pendaftaran-frontend.git)
     cd pendaftaran-frontend
     ```
 
