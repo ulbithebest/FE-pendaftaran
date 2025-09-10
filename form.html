@@ -107,13 +107,13 @@
                     </div>
 
                     <div>
-                        <label for="cv" class="block mb-2 font-medium text-neutral-300">Upload CV* (PNG, max 2MB)</label>
-                        <input type="file" id="cv" name="cv" accept=".png" class="w-full text-neutral-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:text-white file:bg-gradient-to-r file:from-red-600 file:to-red-800 hover:file:opacity-90 file:cursor-pointer" required>
+                        <label for="cv" class="block mb-2 font-medium text-neutral-300">Upload CV* (Bisa lebih dari 1 file, format PNG, max 2MB per file)</label>
+                        <input type="file" id="cv" name="cv" accept=".png" class="w-full text-neutral-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:text-white file:bg-gradient-to-r file:from-red-600 file:to-red-800 hover:file:opacity-90 file:cursor-pointer" required multiple>
                     </div>
 
                     <div>
-                        <label for="certificate" class="block mb-2 font-medium text-neutral-300">Upload Sertifikat (Opsional, PNG, max 2MB)</label>
-                        <input type="file" id="certificate" name="certificate" accept=".png" class="w-full text-neutral-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-neutral-700 file:text-neutral-200 hover:file:bg-neutral-600 file:cursor-pointer">
+                        <label for="certificate" class="block mb-2 font-medium text-neutral-300">Upload Sertifikat (Opsional, bisa lebih dari 1 file, format PNG, max 2MB per file)</label>
+                        <input type="file" id="certificate" name="certificate" accept=".png" class="w-full text-neutral-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-neutral-700 file:text-neutral-200 hover:file:bg-neutral-600 file:cursor-pointer" multiple>
                     </div>
                     
                     <div class="pt-4">
@@ -153,9 +153,7 @@
     <script src="js/auth.js"></script>
     <script src="js/dashboard.js"></script>
     <script>
-        // Gabungkan kedua event listener menjadi satu agar lebih efisien
         document.addEventListener('DOMContentLoaded', async () => {
-            // --- BAGIAN 1: PENCEGAHAN PENGISIAN GANDA & PROTEKSI HALAMAN ---
             const token = getToken();
             if (!token) { 
                 alert("Anda harus login untuk mengakses halaman ini.");
@@ -175,20 +173,23 @@
                         text: 'Anda sudah pernah mengirimkan formulir pendaftaran. Anda akan diarahkan kembali ke dashboard.',
                         timer: 3000,
                         showConfirmButton: false,
-                        background: '#1f1f1f',
-                        color: '#e5e5e5'
                     });
                     window.location.href = 'user.html';
-                    return; // Hentikan eksekusi skrip jika sudah mendaftar
+                    return;
                 }
             } catch (error) {
                 console.error("Gagal memeriksa status pendaftaran:", error);
             }
 
-            // --- BAGIAN 2: LOGIKA PENGIRIMAN FORMULIR ---
             const submissionForm = document.getElementById('submissionForm');
             submissionForm.addEventListener('submit', async (event) => {
                 event.preventDefault();
+                
+                const cvInput = document.getElementById('cv');
+                if (cvInput.files.length === 0) {
+                    Swal.fire('CV Wajib', 'Anda harus mengunggah minimal satu file CV.', 'error');
+                    return;
+                }
 
                 const formData = new FormData(submissionForm);
                 const div1 = document.getElementById('division1').value;
