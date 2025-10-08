@@ -380,7 +380,7 @@
             try {
                 const token = getToken();
                 // Pastikan endpoint sudah benar
-                const response = await fetch('http://localhost:8080/api/admin/registrations-with-details', {
+                const response = await fetch('https://asia-southeast2-personalsmz.cloudfunctions.net/ProjectSmZ/api/admin/registrations-with-details', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (!response.ok) throw new Error('Gagal memuat data pendaftar.');
@@ -415,7 +415,7 @@
             try {
                 const token = getToken();
                 // Menggunakan PATCH, bukan PUT
-                const response = await fetch(`http://localhost:8080/api/admin/registrations/${currentEditingId}`, {
+                const response = await fetch(`https://asia-southeast2-personalsmz.cloudfunctions.net/ProjectSmZ/api/admin/registrations/${currentEditingId}`, {
                     method: 'PATCH',
                     headers: {
                         'Content-Type': 'application/json',
@@ -487,7 +487,7 @@
             if (result.isConfirmed) {
                 try {
                     const token = getToken();
-                    const response = await fetch('http://localhost:8080/api/admin/registrations/bulk-update', {
+                    const response = await fetch('https://asia-southeast2-personalsmz.cloudfunctions.net/ProjectSmZ/api/admin/registrations/bulk-update', {
                         method: 'PATCH',
                         headers: {
                             'Content-Type': 'application/json',
@@ -541,7 +541,7 @@
             if (result.isConfirmed) {
                 try {
                     const token = getToken();
-                    const response = await fetch(`http://localhost:8080/api/admin/registrations/${regId}`, {
+                    const response = await fetch(`https://asia-southeast2-personalsmz.cloudfunctions.net/ProjectSmZ/api/admin/registrations/${regId}`, {
                         method: 'DELETE',
                         headers: { 'Authorization': `Bearer ${token}` }
                     });

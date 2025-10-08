@@ -16,7 +16,7 @@ async function fetchUserData() {
     }
 
     try {
-        const response = await fetch('http://localhost:8080/api/user/profile', {
+        const response = await fetch('https://asia-southeast2-personalsmz.cloudfunctions.net/ProjectSmZ/api/user/profile', {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`
