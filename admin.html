@@ -7,6 +7,7 @@
     <title>Admin Dashboard - HIMATIF</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <style>
         @keyframes fadeIn {
@@ -154,6 +155,9 @@
                 <option value="Akademik">Akademik</option>
                 <option value="Kepelatihan">Kepelatihan</option>
             </select>
+            <button onclick="exportRegistrations()" class="w-full md:w-auto px-4 py-2 rounded-lg text-white font-semibold bg-gradient-to-r from-emerald-600 to-emerald-800 hover:scale-105 shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40 transition-all duration-300">
+                <i class="fa-solid fa-file-excel mr-2"></i>Export Excel
+            </button>
         </div>
         
         <div class="bg-neutral-900 rounded-xl border border-neutral-800 overflow-hidden">
@@ -305,12 +309,12 @@
             addCheckboxListeners();
         }
 
-        function applyFilters() {
+        function getFilteredRegistrations() {
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
             const statusTerm = document.getElementById('statusFilter').value;
             const divisionTerm = document.getElementById('divisionFilter').value;
 
-            let filteredRegistrations = allRegistrations.filter(reg => {
+            return allRegistrations.filter(reg => {
                 const nameMatch = reg.name.toLowerCase().includes(searchTerm);
                 const nimMatch = reg.nim.toLowerCase().includes(searchTerm);
                 const statusMatch = statusTerm ? reg.status === statusTerm : true;
@@ -318,9 +322,89 @@
 
                 return (nameMatch || nimMatch) && statusMatch && divisionMatch;
             });
+        }
 
+        function applyFilters() {
+            const filteredRegistrations = getFilteredRegistrations();
             renderRegistrations(filteredRegistrations);
             updateBulkActionPanel();
+        }
+
+        function sanitizeSheetName(name) {
+            return String(name || 'Sheet')
+                .replace(/[\\\/\?\*\[\]:]/g, '')
+                .slice(0, 31) || 'Sheet';
+        }
+
+        function buildExportSheet(rows, title, filterLabel, exportTimestamp) {
+            const sheetRows = [
+                [title],
+                [`Tanggal Export: ${exportTimestamp}`],
+                [`Filter Divisi: ${filterLabel}`],
+                [],
+                ['NPM', 'Nama', 'Divisi 1', 'Divisi 2'],
+                ...rows.map(reg => [reg.nim, reg.name, reg.division1, reg.division2])
+            ];
+
+            const worksheet = XLSX.utils.aoa_to_sheet(sheetRows);
+            worksheet['!cols'] = [
+                { wch: 18 },
+                { wch: 28 },
+                { wch: 24 },
+                { wch: 24 }
+            ];
+            worksheet['!merges'] = [
+                { s: { r: 0, c: 0 }, e: { r: 0, c: 3 } },
+                { s: { r: 1, c: 0 }, e: { r: 1, c: 3 } },
+                { s: { r: 2, c: 0 }, e: { r: 2, c: 3 } }
+            ];
+            worksheet['!autofilter'] = { ref: `A5:D${Math.max(sheetRows.length, 5)}` };
+            return worksheet;
+        }
+
+        function exportRegistrations() {
+            const filteredRegistrations = getFilteredRegistrations();
+            if (filteredRegistrations.length === 0) {
+                Swal.fire('Tidak Ada Data', 'Tidak ada data yang bisa diexport dengan filter saat ini.', 'warning');
+                return;
+            }
+
+            const divisionTerm = document.getElementById('divisionFilter').value;
+            const safeDivisionName = (divisionTerm || 'semua-divisi').replace(/[^\w-]+/g, '-').toLowerCase();
+            const filterLabel = divisionTerm || 'Semua Divisi';
+            const exportTimestamp = new Date().toLocaleString('id-ID');
+            const workbook = XLSX.utils.book_new();
+
+            const summarySheet = buildExportSheet(
+                filteredRegistrations,
+                'Data Pendaftar HIMATIF',
+                filterLabel,
+                exportTimestamp
+            );
+            XLSX.utils.book_append_sheet(workbook, summarySheet, sanitizeSheetName('Semua Data'));
+
+            const groupedByDivision = filteredRegistrations.reduce((groups, reg) => {
+                [reg.division1, reg.division2].forEach(division => {
+                    if (!division) return;
+                    if (!groups[division]) groups[division] = [];
+                    if (!groups[division].some(item => item.id === reg.id)) {
+                        groups[division].push(reg);
+                    }
+                });
+                return groups;
+            }, {});
+
+            Object.entries(groupedByDivision).forEach(([division, rows]) => {
+                const divisionSheet = buildExportSheet(
+                    rows,
+                    `Data Pendaftar Divisi ${division}`,
+                    division,
+                    exportTimestamp
+                );
+                XLSX.utils.book_append_sheet(workbook, divisionSheet, sanitizeSheetName(division));
+            });
+
+            XLSX.writeFile(workbook, `pendaftar-${safeDivisionName}.xlsx`);
         }
 
         function closeModal() { modal.classList.add('hidden'); }
@@ -339,9 +423,21 @@
                 const filesContainer = document.getElementById('modalFilesContainer');
                 filesContainer.innerHTML = ''; // Kosongkan container dulu
 
+                const cvUrls = Array.isArray(reg.cv_urls)
+                    ? reg.cv_urls
+                    : (reg.cv_url ? [reg.cv_url] : []);
+
+                const certificateUrls = Array.isArray(reg.certificate_urls)
+                    ? reg.certificate_urls
+                    : (reg.certificate_url ? [reg.certificate_url] : []);
+
+                const formalPhotoUrls = Array.isArray(reg.formal_photo_urls)
+                    ? reg.formal_photo_urls
+                    : (reg.formal_photo_url ? [reg.formal_photo_url] : []);
+
                 // Tampilkan link CV
-                if (reg.cv_urls && reg.cv_urls.length > 0) {
-                    reg.cv_urls.forEach((url, index) => {
+                if (cvUrls.length > 0) {
+                    cvUrls.forEach((url, index) => {
                         const cvLink = document.createElement('a');
                         cvLink.href = url;
                         cvLink.target = '_blank';
@@ -354,14 +450,25 @@
                 }
 
                 // Tampilkan link Sertifikat (jika ada)
-                if (reg.certificate_urls && reg.certificate_urls.length > 0) {
-                    reg.certificate_urls.forEach((url, index) => {
+                if (certificateUrls.length > 0) {
+                    certificateUrls.forEach((url, index) => {
                         const certLink = document.createElement('a');
                         certLink.href = url;
                         certLink.target = '_blank';
                         certLink.className = 'block px-4 py-2 rounded-md font-medium bg-blue-900/40 border border-blue-700 text-neutral-300 hover:bg-blue-900/60 hover:text-white transition-colors';
                         certLink.innerHTML = `<i class="fa-solid fa-award mr-2"></i>Lihat Sertifikat ${index + 1}`;
                         filesContainer.appendChild(certLink);
+                    });
+                }
+
+                if (formalPhotoUrls.length > 0) {
+                    formalPhotoUrls.forEach((url, index) => {
+                        const formalPhotoLink = document.createElement('a');
+                        formalPhotoLink.href = url;
+                        formalPhotoLink.target = '_blank';
+                        formalPhotoLink.className = 'block px-4 py-2 rounded-md font-medium bg-emerald-900/40 border border-emerald-700 text-neutral-300 hover:bg-emerald-900/60 hover:text-white transition-colors';
+                        formalPhotoLink.innerHTML = `<i class="fa-solid fa-camera mr-2"></i>Lihat Foto Formal ${index + 1}`;
+                        filesContainer.appendChild(formalPhotoLink);
                     });
                 }
                 // ----------------------------------------

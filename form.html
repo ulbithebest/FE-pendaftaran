@@ -112,8 +112,13 @@
                     </div>
 
                     <div>
-                        <label for="certificate" class="block mb-2 font-medium text-neutral-300">Upload Sertifikat (Opsional, bisa lebih dari 1 file, format PNG, max 2MB per file)</label>
-                        <input type="file" id="certificate" name="certificate" accept=".png" class="w-full text-neutral-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-neutral-700 file:text-neutral-200 hover:file:bg-neutral-600 file:cursor-pointer" multiple>
+                        <label for="certificate" class="block mb-2 font-medium text-neutral-300">Upload Sertifikat Morris* (Bisa lebih dari 1 file, format PNG, max 2MB per file)</label>
+                        <input type="file" id="certificate" name="certificate" accept=".png" class="w-full text-neutral-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:text-white file:bg-gradient-to-r file:from-red-600 file:to-red-800 hover:file:opacity-90 file:cursor-pointer" required multiple>
+                    </div>
+
+                    <div>
+                        <label for="formal_photo" class="block mb-2 font-medium text-neutral-300">Upload Foto Formal* (Format PNG, max 2MB)</label>
+                        <input type="file" id="formal_photo" name="formal_photo" accept=".png" class="w-full text-neutral-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:text-white file:bg-gradient-to-r file:from-red-600 file:to-red-800 hover:file:opacity-90 file:cursor-pointer" required>
                     </div>
                     
                     <div class="pt-4">
@@ -188,6 +193,18 @@
                 const cvInput = document.getElementById('cv');
                 if (cvInput.files.length === 0) {
                     Swal.fire('CV Wajib', 'Anda harus mengunggah minimal satu file CV.', 'error');
+                    return;
+                }
+
+                const certificateInput = document.getElementById('certificate');
+                if (certificateInput.files.length === 0) {
+                    Swal.fire('Sertifikat Morris Wajib', 'Anda harus mengunggah minimal satu file Sertifikat Morris.', 'error');
+                    return;
+                }
+
+                const formalPhotoInput = document.getElementById('formal_photo');
+                if (formalPhotoInput.files.length === 0) {
+                    Swal.fire('Foto Formal Wajib', 'Anda harus mengunggah foto formal.', 'error');
                     return;
                 }
 
