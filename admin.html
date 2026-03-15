@@ -342,8 +342,18 @@
                 [`Tanggal Export: ${exportTimestamp}`],
                 [`Filter Divisi: ${filterLabel}`],
                 [],
-                ['NPM', 'Nama', 'Divisi 1', 'Divisi 2'],
-                ...rows.map(reg => [reg.nim, reg.name, reg.division1, reg.division2])
+                ['NPM', 'Nama', 'Divisi 1', 'Divisi 2', 'Visi & Misi', 'Link CV', 'Link Sertifikat Morris', 'Link Sertifikat Bebas', 'Link Foto Formal'],
+                ...rows.map(reg => [
+                    reg.nim,
+                    reg.name,
+                    reg.division1,
+                    reg.division2,
+                    reg.vision_mission || '',
+                    reg.cv_url || '',
+                    reg.certificate_url || '',
+                    reg.optional_certificate_url || '',
+                    reg.formal_photo_url || ''
+                ])
             ];
 
             const worksheet = XLSX.utils.aoa_to_sheet(sheetRows);
@@ -351,14 +361,19 @@
                 { wch: 18 },
                 { wch: 28 },
                 { wch: 24 },
-                { wch: 24 }
+                { wch: 24 },
+                { wch: 60 },
+                { wch: 48 },
+                { wch: 48 },
+                { wch: 48 },
+                { wch: 48 }
             ];
             worksheet['!merges'] = [
-                { s: { r: 0, c: 0 }, e: { r: 0, c: 3 } },
-                { s: { r: 1, c: 0 }, e: { r: 1, c: 3 } },
-                { s: { r: 2, c: 0 }, e: { r: 2, c: 3 } }
+                { s: { r: 0, c: 0 }, e: { r: 0, c: 8 } },
+                { s: { r: 1, c: 0 }, e: { r: 1, c: 8 } },
+                { s: { r: 2, c: 0 }, e: { r: 2, c: 8 } }
             ];
-            worksheet['!autofilter'] = { ref: `A5:D${Math.max(sheetRows.length, 5)}` };
+            worksheet['!autofilter'] = { ref: `A5:I${Math.max(sheetRows.length, 5)}` };
             return worksheet;
         }
 
@@ -439,6 +454,8 @@
                     ? reg.formal_photo_urls
                     : (reg.formal_photo_url ? [reg.formal_photo_url] : []);
 
+                let hasAnyDocument = false;
+
                 // Tampilkan link CV
                 if (cvUrls.length > 0) {
                     cvUrls.forEach((url, index) => {
@@ -448,9 +465,8 @@
                         cvLink.className = 'block px-4 py-2 rounded-md font-medium bg-neutral-800 border border-neutral-700 text-neutral-300 hover:bg-neutral-700 hover:text-white transition-colors';
                         cvLink.innerHTML = `<i class="fa-solid fa-file-invoice mr-2"></i>Lihat CV ${index + 1}`;
                         filesContainer.appendChild(cvLink);
+                        hasAnyDocument = true;
                     });
-                } else {
-                     filesContainer.innerHTML += '<p class="text-neutral-500 text-sm">Tidak ada CV yang diunggah.</p>'
                 }
 
                 // Tampilkan link Sertifikat Morris
@@ -462,6 +478,7 @@
                         certLink.className = 'block px-4 py-2 rounded-md font-medium bg-blue-900/40 border border-blue-700 text-neutral-300 hover:bg-blue-900/60 hover:text-white transition-colors';
                         certLink.innerHTML = `<i class="fa-solid fa-award mr-2"></i>Lihat Sertifikat Morris ${index + 1}`;
                         filesContainer.appendChild(certLink);
+                        hasAnyDocument = true;
                     });
                 }
 
@@ -473,6 +490,7 @@
                         optionalCertLink.className = 'block px-4 py-2 rounded-md font-medium bg-violet-900/40 border border-violet-700 text-neutral-300 hover:bg-violet-900/60 hover:text-white transition-colors';
                         optionalCertLink.innerHTML = `<i class="fa-solid fa-certificate mr-2"></i>Lihat Sertifikat Bebas ${index + 1}`;
                         filesContainer.appendChild(optionalCertLink);
+                        hasAnyDocument = true;
                     });
                 }
 
@@ -484,7 +502,12 @@
                         formalPhotoLink.className = 'block px-4 py-2 rounded-md font-medium bg-emerald-900/40 border border-emerald-700 text-neutral-300 hover:bg-emerald-900/60 hover:text-white transition-colors';
                         formalPhotoLink.innerHTML = `<i class="fa-solid fa-camera mr-2"></i>Lihat Foto Formal ${index + 1}`;
                         filesContainer.appendChild(formalPhotoLink);
+                        hasAnyDocument = true;
                     });
+                }
+
+                if (!hasAnyDocument) {
+                    filesContainer.innerHTML = '<p class="text-neutral-500 text-sm">Tidak ada dokumen yang diunggah.</p>';
                 }
                 // ----------------------------------------
                 
