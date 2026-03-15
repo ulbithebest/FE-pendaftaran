@@ -336,24 +336,46 @@
                 .slice(0, 31) || 'Sheet';
         }
 
+        function splitVisionMissionText(text) {
+            const source = String(text || '').trim();
+            if (!source) {
+                return { visi: '', misi: '' };
+            }
+
+            const normalized = source.replace(/\s+/g, ' ').trim();
+            const match = normalized.match(/visi\s*[:\-]?\s*(.*?)\s*misi\s*[:\-]?\s*(.*)/i);
+            if (match) {
+                return {
+                    visi: match[1].trim(),
+                    misi: match[2].trim()
+                };
+            }
+
+            return { visi: normalized, misi: '' };
+        }
+
         function buildExportSheet(rows, title, filterLabel, exportTimestamp) {
             const sheetRows = [
                 [title],
                 [`Tanggal Export: ${exportTimestamp}`],
                 [`Filter Divisi: ${filterLabel}`],
                 [],
-                ['NPM', 'Nama', 'Divisi 1', 'Divisi 2', 'Visi & Misi', 'Link CV', 'Link Sertifikat Morris', 'Link Sertifikat Bebas', 'Link Foto Formal'],
-                ...rows.map(reg => [
-                    reg.nim,
-                    reg.name,
-                    reg.division1,
-                    reg.division2,
-                    reg.vision_mission || '',
-                    reg.cv_url || '',
-                    reg.certificate_url || '',
-                    reg.optional_certificate_url || '',
-                    reg.formal_photo_url || ''
-                ])
+                ['NPM', 'Nama', 'Divisi 1', 'Divisi 2', 'Visi', 'Misi', 'Link CV', 'Link Sertifikat Morris', 'Link Sertifikat Bebas', 'Link Foto Formal'],
+                ...rows.map(reg => {
+                    const { visi, misi } = splitVisionMissionText(reg.vision_mission);
+                    return [
+                        reg.nim,
+                        reg.name,
+                        reg.division1,
+                        reg.division2,
+                        visi,
+                        misi,
+                        reg.cv_url || '',
+                        reg.certificate_url || '',
+                        reg.optional_certificate_url || '',
+                        reg.formal_photo_url || ''
+                    ];
+                })
             ];
 
             const worksheet = XLSX.utils.aoa_to_sheet(sheetRows);
@@ -362,18 +384,19 @@
                 { wch: 28 },
                 { wch: 24 },
                 { wch: 24 },
-                { wch: 60 },
+                { wch: 40 },
+                { wch: 40 },
                 { wch: 48 },
                 { wch: 48 },
                 { wch: 48 },
                 { wch: 48 }
             ];
             worksheet['!merges'] = [
-                { s: { r: 0, c: 0 }, e: { r: 0, c: 8 } },
-                { s: { r: 1, c: 0 }, e: { r: 1, c: 8 } },
-                { s: { r: 2, c: 0 }, e: { r: 2, c: 8 } }
+                { s: { r: 0, c: 0 }, e: { r: 0, c: 9 } },
+                { s: { r: 1, c: 0 }, e: { r: 1, c: 9 } },
+                { s: { r: 2, c: 0 }, e: { r: 2, c: 9 } }
             ];
-            worksheet['!autofilter'] = { ref: `A5:I${Math.max(sheetRows.length, 5)}` };
+            worksheet['!autofilter'] = { ref: `A5:J${Math.max(sheetRows.length, 5)}` };
             return worksheet;
         }
 
