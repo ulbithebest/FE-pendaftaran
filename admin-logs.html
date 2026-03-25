@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log Web - Super Admin HIMATIF</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        body {
+            background-color: #000000;
+            background-image: radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.05) 1px, transparent 0);
+            background-size: 2rem 2rem;
+        }
+
+        .animate-fade-in {
+            opacity: 0;
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+    </style>
+</head>
+<body class="text-neutral-200 flex min-h-screen font-sans">
+    <aside class="hidden lg:flex w-20 hover:w-64 bg-neutral-950 p-4 flex-col shadow-lg transition-all duration-300 ease-in-out group animate-fade-in border-r border-neutral-800">
+        <div class="flex items-center gap-4 mb-10 h-10">
+            <i class="fa-solid fa-user-shield fa-2x text-red-500 min-w-[32px] text-center"></i>
+            <span class="font-bold text-xl bg-gradient-to-r from-red-500 to-red-600 bg-clip-text text-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">SUPER ADMIN</span>
+        </div>
+        <div class="flex flex-col justify-between flex-1">
+            <nav class="flex flex-col gap-4">
+                <a href="admin.html" class="flex items-center gap-3 px-2 py-2 text-neutral-400 hover:bg-neutral-800 hover:text-white rounded-lg h-12">
+                    <i class="fa-solid fa-users fa-fw fa-lg min-w-[32px] text-center"></i>
+                    <span class="font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">Pendaftar</span>
+                </a>
+                <a href="admin-users.html" class="flex items-center gap-3 px-2 py-2 text-neutral-400 hover:bg-neutral-800 hover:text-white rounded-lg h-12">
+                    <i class="fa-solid fa-address-book fa-fw fa-lg min-w-[32px] text-center"></i>
+                    <span class="font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">Pengguna</span>
+                </a>
+                <a href="admin-info.html" class="flex items-center gap-3 px-2 py-2 text-neutral-400 hover:bg-neutral-800 hover:text-white rounded-lg h-12">
+                    <i class="fa-solid fa-bullhorn fa-fw fa-lg min-w-[32px] text-center"></i>
+                    <span class="font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">Informasi</span>
+                </a>
+                <a href="admin-logs.html" class="flex items-center gap-3 px-2 py-2 text-white bg-gradient-to-r from-red-600 to-red-800 rounded-lg h-12 shadow-md shadow-red-500/20">
+                    <i class="fa-solid fa-file-lines fa-fw fa-lg min-w-[32px] text-center"></i>
+                    <span class="font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">Log Web</span>
+                </a>
+            </nav>
+            <div>
+                <button onclick="logout()" class="w-full flex items-center gap-4 px-3 py-2 text-neutral-400 hover:bg-red-900/50 hover:text-white rounded-lg h-12">
+                    <i class="fa-solid fa-right-from-bracket fa-fw fa-lg min-w-[32px] text-center"></i>
+                    <span class="font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">Log Out</span>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <main class="flex-1 p-4 lg:p-8 animate-fade-in pb-24 lg:pb-8">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+            <div>
+                <h1 class="text-2xl lg:text-3xl font-bold text-red-600">Log Web</h1>
+                <p class="text-sm text-neutral-400 mt-2">Log ini bersifat recent/in-memory. Bisa reset saat service restart atau redeploy.</p>
+            </div>
+            <button id="refreshButton" class="px-5 py-2 rounded-md text-white font-semibold bg-gradient-to-r from-red-600 to-red-800 hover:scale-105 shadow-lg shadow-red-500/20 hover:shadow-red-500/40 transition-all">
+                <i class="fa-solid fa-rotate-right mr-2"></i>Refresh
+            </button>
+        </div>
+
+        <div class="bg-neutral-900 rounded-xl border border-neutral-800 overflow-hidden">
+            <div class="hidden lg:grid grid-cols-[180px_100px_90px_120px_1fr_120px] border-b border-neutral-700 text-neutral-400 font-semibold">
+                <div class="p-4">Waktu</div>
+                <div class="p-4">Level</div>
+                <div class="p-4">Status</div>
+                <div class="p-4">Method</div>
+                <div class="p-4">Path</div>
+                <div class="p-4">Durasi</div>
+            </div>
+            <div id="logsContainer" class="divide-y divide-neutral-800">
+                <div class="p-4 text-center text-neutral-500">Memuat log...</div>
+            </div>
+        </div>
+    </main>
+
+    <nav class="lg:hidden fixed bottom-0 left-0 right-0 bg-neutral-950 border-t border-neutral-800 flex justify-around">
+        <a href="admin.html" class="flex flex-col items-center justify-center w-full h-16 text-neutral-400 hover:text-white">
+            <i class="fa-solid fa-users fa-lg"></i>
+            <span class="text-xs mt-1.5">Pendaftar</span>
+        </a>
+        <a href="admin-users.html" class="flex flex-col items-center justify-center w-full h-16 text-neutral-400 hover:text-white">
+            <i class="fa-solid fa-address-book fa-lg"></i>
+            <span class="text-xs mt-1.5">Pengguna</span>
+        </a>
+        <a href="admin-info.html" class="flex flex-col items-center justify-center w-full h-16 text-neutral-400 hover:text-white">
+            <i class="fa-solid fa-bullhorn fa-lg"></i>
+            <span class="text-xs mt-1.5">Informasi</span>
+        </a>
+        <a href="admin-logs.html" class="flex flex-col items-center justify-center w-full h-16 text-red-500">
+            <i class="fa-solid fa-file-lines fa-lg"></i>
+            <span class="text-xs mt-1.5">Log</span>
+        </a>
+        <button onclick="logout()" class="flex flex-col items-center justify-center w-full h-16 text-neutral-400 hover:text-white">
+            <i class="fa-solid fa-right-from-bracket fa-lg"></i>
+            <span class="text-xs mt-1.5">Logout</span>
+        </button>
+    </nav>
+
+    <script src="js/auth.js"></script>
+    <script>
+        function levelClass(level) {
+            if (level === 'error') return 'text-red-400';
+            if (level === 'warn') return 'text-yellow-400';
+            return 'text-emerald-400';
+        }
+
+        function renderLogs(logs) {
+            const container = document.getElementById('logsContainer');
+            container.innerHTML = '';
+
+            if (!Array.isArray(logs) || logs.length === 0) {
+                container.innerHTML = '<div class="p-4 text-center text-neutral-500">Belum ada log yang terekam.</div>';
+                return;
+            }
+
+            logs.forEach(log => {
+                const item = document.createElement('div');
+                item.className = 'p-4 grid grid-cols-1 lg:grid-cols-[180px_100px_90px_120px_1fr_120px] gap-2 lg:gap-4';
+                item.innerHTML = `
+                    <div class="text-sm text-neutral-400">${new Date(log.timestamp).toLocaleString('id-ID')}</div>
+                    <div class="text-sm font-semibold uppercase ${levelClass(log.level)}">${log.level || '-'}</div>
+                    <div class="text-sm text-neutral-300">${log.status_code || '-'}</div>
+                    <div class="text-sm text-neutral-300">${log.method || '-'}</div>
+                    <div class="text-sm text-neutral-300 break-all">${log.path || '-'}</div>
+                    <div class="text-sm text-neutral-300">${log.duration_ms ?? '-'} ms</div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        async function loadLogs() {
+            const token = getToken();
+            const response = await fetch('https://asia-southeast2-personalsmz.cloudfunctions.net/ProjectSmZ/api/admin/logs', {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (!response.ok) {
+                throw new Error('Gagal memuat log web.');
+            }
+
+            const logs = await response.json();
+            renderLogs(logs);
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const userData = await fetchUserData();
+            if (!userData || !isSuperAdminRole(userData.role)) {
+                alert('Akses ditolak. Halaman ini khusus untuk Super Admin.');
+                window.location.href = 'index.html';
+                return;
+            }
+
+            try {
+                await loadLogs();
+            } catch (error) {
+                document.getElementById('logsContainer').innerHTML = `<div class="p-4 text-center text-red-500">${error.message}</div>`;
+            }
+
+            document.getElementById('refreshButton').addEventListener('click', async () => {
+                try {
+                    await loadLogs();
+                } catch (error) {
+                    document.getElementById('logsContainer').innerHTML = `<div class="p-4 text-center text-red-500">${error.message}</div>`;
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -63,6 +63,10 @@
                     <i class="fa-solid fa-bullhorn fa-fw fa-lg min-w-[32px] text-center"></i>
                     <span class="font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">Kelola Informasi</span>
                 </a>
+                <a href="admin-logs.html" id="superAdminLogsLinkDesktop" class="hidden items-center gap-3 px-2 py-2 text-neutral-400 hover:bg-neutral-800 hover:text-white rounded-lg h-12">
+                    <i class="fa-solid fa-file-lines fa-fw fa-lg min-w-[32px] text-center"></i>
+                    <span class="font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">Log Web</span>
+                </a>
             </nav>
             <div>
                 <button onclick="logout()"
@@ -113,6 +117,10 @@
         <a href="admin-info.html" class="flex flex-col items-center justify-center w-full h-16 text-neutral-400 hover:text-white">
             <i class="fa-solid fa-bullhorn fa-lg"></i>
             <span class="text-xs mt-1.5">Informasi</span>
+        </a>
+        <a href="admin-logs.html" id="superAdminLogsLinkMobile" class="hidden flex-col items-center justify-center w-full h-16 text-neutral-400 hover:text-white">
+            <i class="fa-solid fa-file-lines fa-lg"></i>
+            <span class="text-xs mt-1.5">Log</span>
         </a>
         <button onclick="logout()"
             class="flex flex-col items-center justify-center w-full h-16 text-neutral-400 hover:text-white transition-colors">
@@ -178,10 +186,18 @@
 
         document.addEventListener('DOMContentLoaded', async () => {
             const userData = await fetchUserData();
-            if (!userData || userData.role !== 'admin') {
+            if (!userData || !isAdminRole(userData.role)) {
                 alert("Akses ditolak. Halaman ini khusus untuk Admin.");
                 window.location.href = 'index.html';
                 return;
+            }
+            if (isSuperAdminRole(userData.role)) {
+                const desktopLogsLink = document.getElementById('superAdminLogsLinkDesktop');
+                const mobileLogsLink = document.getElementById('superAdminLogsLinkMobile');
+                if (desktopLogsLink) desktopLogsLink.classList.remove('hidden');
+                if (desktopLogsLink) desktopLogsLink.classList.add('flex');
+                if (mobileLogsLink) mobileLogsLink.classList.remove('hidden');
+                if (mobileLogsLink) mobileLogsLink.classList.add('flex');
             }
             loadUsers();
 

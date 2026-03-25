@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 showConfirmButton: false,
             });
 
-            window.location.href = result.role === 'admin' ? 'admin.html' : 'user.html';
+            window.location.href = (result.role === 'admin' || result.role === 'super_admin') ? 'admin.html' : 'user.html';
 
         } catch (error) {
             Swal.fire({ icon: 'error', title: 'Login Gagal', text: error.message });

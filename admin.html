@@ -90,6 +90,10 @@
                     <i class="fa-solid fa-bullhorn fa-fw fa-lg min-w-[32px] text-center"></i>
                     <span class="font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">Kelola Informasi</span>
                 </a>
+                <a href="admin-logs.html" id="superAdminLogsLinkDesktop" class="hidden items-center gap-3 px-2 py-2 text-neutral-400 hover:bg-neutral-800 hover:text-white rounded-lg h-12">
+                    <i class="fa-solid fa-file-lines fa-fw fa-lg min-w-[32px] text-center"></i>
+                    <span class="font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap">Log Web</span>
+                </a>
             </nav>
 
             <div>
@@ -247,6 +251,10 @@
             <i class="fa-solid fa-bullhorn fa-lg"></i>
             <span class="text-xs mt-1.5">Informasi</span>
         </a>
+        <a href="admin-logs.html" id="superAdminLogsLinkMobile" class="hidden flex-col items-center justify-center w-full h-16 text-neutral-400 hover:text-white">
+            <i class="fa-solid fa-file-lines fa-lg"></i>
+            <span class="text-xs mt-1.5">Log</span>
+        </a>
         <button onclick="logout()"
             class="flex flex-col items-center justify-center w-full h-16 text-neutral-400 hover:text-white transition-colors">
             <i class="fa-solid fa-right-from-bracket fa-lg"></i>
@@ -299,14 +307,34 @@
                         ${reg.status}
                     </div>
                     <div class="flex gap-2 justify-center mt-2 lg:mt-0">
-                        <button onclick="showModal('${reg.id}')" class="flex-1 px-3 py-2 text-sm bg-blue-600 rounded hover:bg-blue-700 transition-colors">Kelola</button>
-                        <button onclick="deleteRegistration('${reg.id}', '${reg.name}')" class="flex-1 px-3 py-2 text-sm bg-red-600 rounded hover:bg-red-700 transition-colors">Hapus</button>
+                        <button data-action="manage" data-id="${reg.id}" class="manage-btn flex-1 px-3 py-2 text-sm bg-blue-600 rounded hover:bg-blue-700 transition-colors">Kelola</button>
+                        <button data-action="delete" data-id="${reg.id}" class="delete-btn flex-1 px-3 py-2 text-sm bg-red-600 rounded hover:bg-red-700 transition-colors">Hapus</button>
                     </div>
                 </div>
             `;
                 container.appendChild(item);
             });
             addCheckboxListeners();
+        }
+
+        function handleRegistrationAction(event) {
+            const actionButton = event.target.closest('button[data-action]');
+            if (!actionButton) return;
+
+            const regId = actionButton.dataset.id;
+            if (!regId) return;
+
+            const reg = allRegistrations.find(item => item.id === regId);
+            if (!reg) return;
+
+            if (actionButton.dataset.action === 'manage') {
+                showModal(regId);
+                return;
+            }
+
+            if (actionButton.dataset.action === 'delete') {
+                deleteRegistration(regId, reg.name);
+            }
         }
 
         function getFilteredRegistrations() {
@@ -575,6 +603,12 @@
         document.getElementById('editForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             if (!currentEditingId) return;
+
+            if (statusSelect.value === 'interview' && (!interviewInput.value || !locationInput.value.trim())) {
+                Swal.fire('Data Wawancara Belum Lengkap', 'Jadwal dan lokasi wawancara wajib diisi.', 'warning');
+                return;
+            }
+
             const updatedData = {
                 status: statusSelect.value,
                 interview_schedule: interviewInput.value,
@@ -680,12 +714,21 @@
 
         document.addEventListener('DOMContentLoaded', async () => {
             const userData = await fetchUserData();
-            if (!userData || userData.role !== 'admin') {
+            if (!userData || !isAdminRole(userData.role)) {
                 alert("Akses ditolak. Halaman ini khusus untuk Admin.");
                 window.location.href = 'index.html';
                 return;
             }
+            if (isSuperAdminRole(userData.role)) {
+                const desktopLogsLink = document.getElementById('superAdminLogsLinkDesktop');
+                const mobileLogsLink = document.getElementById('superAdminLogsLinkMobile');
+                if (desktopLogsLink) desktopLogsLink.classList.remove('hidden');
+                if (desktopLogsLink) desktopLogsLink.classList.add('flex');
+                if (mobileLogsLink) mobileLogsLink.classList.remove('hidden');
+                if (mobileLogsLink) mobileLogsLink.classList.add('flex');
+            }
             loadRegistrations();
+            document.getElementById('registrationsContainer').addEventListener('click', handleRegistrationAction);
 
             document.getElementById('searchInput').addEventListener('input', applyFilters);
             document.getElementById('statusFilter').addEventListener('change', applyFilters);

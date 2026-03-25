@@ -164,6 +164,31 @@
     <script src="js/dashboard.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
+            const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
+
+            function validateFileInput(input, options) {
+                const { label, required, allowedExtensions } = options;
+                const files = Array.from(input.files || []);
+
+                if (required && files.length === 0) {
+                    return `${label} wajib diunggah.`;
+                }
+
+                for (const file of files) {
+                    const lowerName = file.name.toLowerCase();
+                    const hasValidExtension = allowedExtensions.some(ext => lowerName.endsWith(ext));
+                    if (!hasValidExtension) {
+                        return `${label} hanya mendukung format ${allowedExtensions.join(', ')}.`;
+                    }
+
+                    if (file.size > MAX_FILE_SIZE) {
+                        return `${label} melebihi batas 2MB.`;
+                    }
+                }
+
+                return null;
+            }
+
             const token = getToken();
             if (!token) { 
                 alert("Anda harus login untuk mengakses halaman ini.");
@@ -196,20 +221,46 @@
                 event.preventDefault();
                 
                 const cvInput = document.getElementById('cv');
-                if (cvInput.files.length === 0) {
-                    Swal.fire('CV Wajib', 'Anda harus mengunggah minimal satu file CV.', 'error');
+                const cvError = validateFileInput(cvInput, {
+                    label: 'CV',
+                    required: true,
+                    allowedExtensions: ['.png', '.pdf']
+                });
+                if (cvError) {
+                    Swal.fire('File CV Tidak Valid', cvError, 'error');
                     return;
                 }
 
                 const certificateInput = document.getElementById('certificate');
-                if (certificateInput.files.length === 0) {
-                    Swal.fire('Sertifikat Morris Wajib', 'Anda harus mengunggah minimal satu file Sertifikat Morris.', 'error');
+                const certificateError = validateFileInput(certificateInput, {
+                    label: 'Sertifikat Morris',
+                    required: true,
+                    allowedExtensions: ['.png', '.pdf']
+                });
+                if (certificateError) {
+                    Swal.fire('File Sertifikat Morris Tidak Valid', certificateError, 'error');
+                    return;
+                }
+
+                const optionalCertificateInput = document.getElementById('optional_certificate');
+                const optionalCertificateError = validateFileInput(optionalCertificateInput, {
+                    label: 'Sertifikat Yang Dimiliki',
+                    required: false,
+                    allowedExtensions: ['.png', '.pdf']
+                });
+                if (optionalCertificateError) {
+                    Swal.fire('File Sertifikat Opsional Tidak Valid', optionalCertificateError, 'error');
                     return;
                 }
 
                 const formalPhotoInput = document.getElementById('formal_photo');
-                if (formalPhotoInput.files.length === 0) {
-                    Swal.fire('Foto Formal Wajib', 'Anda harus mengunggah foto formal.', 'error');
+                const formalPhotoError = validateFileInput(formalPhotoInput, {
+                    label: 'Foto Formal',
+                    required: true,
+                    allowedExtensions: ['.png', '.jpg', '.jpeg']
+                });
+                if (formalPhotoError) {
+                    Swal.fire('File Foto Formal Tidak Valid', formalPhotoError, 'error');
                     return;
                 }
 
@@ -246,7 +297,10 @@
                     window.location.href = 'user.html';
 
                 } catch (error) {
-                    Swal.fire('Error', error.message, 'error');
+                    const message = error.message === 'Failed to fetch'
+                        ? 'Gagal terhubung ke server saat upload. Periksa koneksi internet, ukuran file, lalu coba lagi.'
+                        : error.message;
+                    Swal.fire('Error', message, 'error');
                 }
             });
         });

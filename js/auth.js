@@ -9,6 +9,14 @@ function logout() {
     window.location.href = 'login.html';
 }
 
+function isAdminRole(role) {
+    return role === 'admin' || role === 'super_admin';
+}
+
+function isSuperAdminRole(role) {
+    return role === 'super_admin';
+}
+
 async function fetchUserData() {
     const token = getToken();
     if (!token) {

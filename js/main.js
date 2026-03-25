@@ -12,7 +12,7 @@ window.onload = function() {
 
         // Atur link dashboard berdasarkan role
         const dashboardLink = document.getElementById('dashboard-link');
-        dashboardLink.href = userData.role === 'admin' ? 'admin.html' : 'user.html';
+        dashboardLink.href = (userData.role === 'admin' || userData.role === 'super_admin') ? 'admin.html' : 'user.html';
 
         // Tampilkan pesan selamat datang
         document.getElementById('welcome-text').innerText = `Halo, ${userData.nim}`;
