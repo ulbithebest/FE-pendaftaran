@@ -158,6 +158,24 @@
                         <option value="super_admin">Super Admin</option>
                     </select>
                 </div>
+                <div class="rounded-xl border border-neutral-800 bg-neutral-900/60 p-4">
+                    <div class="mb-3">
+                        <h3 class="text-sm font-semibold text-white">Reset Password</h3>
+                        <p class="mt-1 text-xs text-neutral-500">Kosongkan jika tidak ingin mengganti password user. Super admin tidak perlu memasukkan password lama.</p>
+                    </div>
+                    <div class="grid gap-4 md:grid-cols-2">
+                        <div>
+                            <label for="editUserNewPassword" class="mb-2 block text-sm font-semibold text-neutral-300">Password Baru</label>
+                            <input id="editUserNewPassword" name="new_password" type="password" minlength="6"
+                                class="w-full rounded-lg border border-neutral-700 bg-neutral-950 px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-red-500">
+                        </div>
+                        <div>
+                            <label for="editUserConfirmPassword" class="mb-2 block text-sm font-semibold text-neutral-300">Konfirmasi Password Baru</label>
+                            <input id="editUserConfirmPassword" name="confirm_new_password" type="password" minlength="6"
+                                class="w-full rounded-lg border border-neutral-700 bg-neutral-950 px-4 py-2.5 text-white focus:outline-none focus:ring-2 focus:ring-red-500">
+                        </div>
+                    </div>
+                </div>
                 <div class="flex flex-col-reverse gap-3 pt-2 sm:flex-row sm:justify-end">
                     <button id="cancelEditModalButton" type="button"
                         class="rounded-lg border border-neutral-700 px-5 py-2.5 font-semibold text-neutral-300 transition hover:border-neutral-500 hover:text-white">
@@ -257,6 +275,8 @@
             document.getElementById('editUserBirthPlace').value = user.birth_place || '';
             document.getElementById('editUserBirthDate').value = user.birth_date || '';
             document.getElementById('editUserRole').value = user.role || 'user';
+            document.getElementById('editUserNewPassword').value = '';
+            document.getElementById('editUserConfirmPassword').value = '';
 
             const modal = document.getElementById('editUserModal');
             modal.classList.remove('hidden');
@@ -356,6 +376,8 @@
 
             const saveButton = document.getElementById('saveEditUserButton');
             const token = getToken();
+            const newPassword = document.getElementById('editUserNewPassword').value.trim();
+            const confirmPassword = document.getElementById('editUserConfirmPassword').value.trim();
             const payload = {
                 name: document.getElementById('editUserName').value.trim(),
                 nim: document.getElementById('editUserNim').value.trim(),
@@ -365,6 +387,17 @@
                 birth_date: document.getElementById('editUserBirthDate').value,
                 role: document.getElementById('editUserRole').value
             };
+
+            if (newPassword || confirmPassword) {
+                if (newPassword.length < 6) {
+                    Swal.fire('Error', 'Password baru minimal 6 karakter.', 'error');
+                    return;
+                }
+                if (newPassword !== confirmPassword) {
+                    Swal.fire('Error', 'Konfirmasi password baru tidak cocok.', 'error');
+                    return;
+                }
+            }
 
             saveButton.disabled = true;
             saveButton.textContent = 'Menyimpan...';
@@ -383,12 +416,27 @@
                     throw new Error(await extractErrorMessage(response, 'Gagal memperbarui data pengguna.'));
                 }
 
+                if (newPassword) {
+                    const passwordResponse = await fetch(`${API_BASE_URL}/api/admin/users/${editingUserId}/password`, {
+                        method: 'PATCH',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ new_password: newPassword })
+                    });
+
+                    if (!passwordResponse.ok) {
+                        throw new Error(await extractErrorMessage(passwordResponse, 'Gagal memperbarui password user.'));
+                    }
+                }
+
                 closeEditModal();
                 await loadUsers();
                 Swal.fire({
                     icon: 'success',
                     title: 'Berhasil',
-                    text: 'Data pengguna berhasil diperbarui.',
+                    text: newPassword ? 'Data pengguna dan password berhasil diperbarui.' : 'Data pengguna berhasil diperbarui.',
                     timer: 1800,
                     showConfirmButton: false
                 });
@@ -437,3 +485,4 @@
 </body>
 
 </html>
+
