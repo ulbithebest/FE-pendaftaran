@@ -59,28 +59,61 @@
     </aside>
 
     <main class="flex-1 p-4 lg:p-8 animate-fade-in pb-24 lg:pb-8">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+        <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between mb-6">
             <div>
                 <h1 class="text-2xl lg:text-3xl font-bold text-red-600">Log Web</h1>
-                <p class="text-sm text-neutral-400 mt-2">Log ini bersifat recent/in-memory. Bisa reset saat service restart atau redeploy.</p>
+                <p class="mt-2 max-w-3xl text-sm text-neutral-400">Log ini menunjukkan request terbaru yang masuk ke backend. Detail yang ditampilkan sekarang mencakup status, durasi, endpoint, IP, host, ukuran request/response, user agent, referer, dan identitas user jika request diautentikasi.</p>
             </div>
-            <button id="refreshButton" class="px-5 py-2 rounded-md text-white font-semibold bg-gradient-to-r from-red-600 to-red-800 hover:scale-105 shadow-lg shadow-red-500/20 hover:shadow-red-500/40 transition-all">
-                <i class="fa-solid fa-rotate-right mr-2"></i>Refresh
-            </button>
+            <div class="flex items-center gap-3">
+                <span id="lastUpdatedLabel" class="text-xs text-neutral-500">Belum diperbarui</span>
+                <button id="refreshButton" class="px-5 py-2 rounded-md text-white font-semibold bg-gradient-to-r from-red-600 to-red-800 hover:scale-105 shadow-lg shadow-red-500/20 hover:shadow-red-500/40 transition-all">
+                    <i class="fa-solid fa-rotate-right mr-2"></i>Refresh
+                </button>
+            </div>
         </div>
 
-        <div class="bg-neutral-900 rounded-xl border border-neutral-800 overflow-hidden">
-            <div class="hidden lg:grid grid-cols-[180px_100px_90px_120px_1fr_120px] border-b border-neutral-700 text-neutral-400 font-semibold">
-                <div class="p-4">Waktu</div>
-                <div class="p-4">Level</div>
-                <div class="p-4">Status</div>
-                <div class="p-4">Method</div>
-                <div class="p-4">Path</div>
-                <div class="p-4">Durasi</div>
+        <div id="summaryCards" class="grid gap-4 md:grid-cols-2 xl:grid-cols-5 mb-6">
+            <div class="rounded-2xl border border-neutral-800 bg-neutral-900 p-4">
+                <div class="text-xs uppercase tracking-wide text-neutral-500">Total Log</div>
+                <div id="totalLogsValue" class="mt-2 text-3xl font-bold text-white">0</div>
             </div>
-            <div id="logsContainer" class="divide-y divide-neutral-800">
-                <div class="p-4 text-center text-neutral-500">Memuat log...</div>
+            <div class="rounded-2xl border border-red-900/50 bg-red-950/30 p-4">
+                <div class="text-xs uppercase tracking-wide text-red-300">Error 5xx</div>
+                <div id="errorLogsValue" class="mt-2 text-3xl font-bold text-red-300">0</div>
             </div>
+            <div class="rounded-2xl border border-yellow-900/50 bg-yellow-950/20 p-4">
+                <div class="text-xs uppercase tracking-wide text-yellow-300">Warning 4xx</div>
+                <div id="warnLogsValue" class="mt-2 text-3xl font-bold text-yellow-300">0</div>
+            </div>
+            <div class="rounded-2xl border border-emerald-900/50 bg-emerald-950/20 p-4">
+                <div class="text-xs uppercase tracking-wide text-emerald-300">Sukses 2xx/3xx</div>
+                <div id="successLogsValue" class="mt-2 text-3xl font-bold text-emerald-300">0</div>
+            </div>
+            <div class="rounded-2xl border border-neutral-800 bg-neutral-900 p-4">
+                <div class="text-xs uppercase tracking-wide text-neutral-500">Rata-rata Durasi</div>
+                <div id="avgDurationValue" class="mt-2 text-3xl font-bold text-white">0 ms</div>
+            </div>
+        </div>
+
+        <div class="mb-6 rounded-2xl border border-neutral-800 bg-neutral-900 p-4">
+            <div class="grid gap-4 lg:grid-cols-[1fr_180px]">
+                <div class="relative">
+                    <input id="searchInput" type="text" placeholder="Cari endpoint, IP, NIM, role, host, atau user agent..."
+                        class="w-full rounded-xl border border-neutral-700 bg-neutral-950 px-11 py-3 text-sm text-white outline-none focus:border-red-500 focus:ring-2 focus:ring-red-500/30">
+                    <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-neutral-500"></i>
+                </div>
+                <select id="levelFilter"
+                    class="rounded-xl border border-neutral-700 bg-neutral-950 px-4 py-3 text-sm text-white outline-none focus:border-red-500 focus:ring-2 focus:ring-red-500/30">
+                    <option value="all">Semua Level</option>
+                    <option value="error">Error</option>
+                    <option value="warn">Warning</option>
+                    <option value="info">Info</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="logsContainer" class="space-y-4">
+            <div class="rounded-2xl border border-neutral-800 bg-neutral-900 p-6 text-center text-neutral-500">Memuat log...</div>
         </div>
     </main>
 
@@ -109,10 +142,107 @@
 
     <script src="js/auth.js"></script>
     <script>
-        function levelClass(level) {
-            if (level === 'error') return 'text-red-400';
-            if (level === 'warn') return 'text-yellow-400';
-            return 'text-emerald-400';
+        const API_BASE_URL = 'https://asia-southeast2-personalsmz.cloudfunctions.net/ProjectSmZ';
+        let allLogs = [];
+
+        function escapeHtml(value) {
+            return String(value ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function levelTone(level) {
+            if (level === 'error') return 'border-red-800/60 bg-red-950/25 text-red-300';
+            if (level === 'warn') return 'border-yellow-800/60 bg-yellow-950/20 text-yellow-300';
+            return 'border-emerald-800/60 bg-emerald-950/20 text-emerald-300';
+        }
+
+        function statusTone(statusCode) {
+            if (statusCode >= 500) return 'border-red-800/60 bg-red-950/25 text-red-300';
+            if (statusCode >= 400) return 'border-yellow-800/60 bg-yellow-950/20 text-yellow-300';
+            return 'border-blue-800/60 bg-blue-950/20 text-blue-300';
+        }
+
+        function formatExactTime(timestamp) {
+            if (!timestamp) return '-';
+            return new Date(timestamp).toLocaleString('id-ID', {
+                dateStyle: 'medium',
+                timeStyle: 'medium'
+            });
+        }
+
+        function formatRelativeTime(timestamp) {
+            if (!timestamp) return '-';
+            const diffMs = Date.now() - new Date(timestamp).getTime();
+            const diffMinutes = Math.floor(diffMs / 60000);
+            if (diffMinutes < 1) return 'baru saja';
+            if (diffMinutes < 60) return `${diffMinutes} menit lalu`;
+            const diffHours = Math.floor(diffMinutes / 60);
+            if (diffHours < 24) return `${diffHours} jam lalu`;
+            const diffDays = Math.floor(diffHours / 24);
+            return `${diffDays} hari lalu`;
+        }
+
+        function formatBytes(bytes) {
+            if (bytes === null || bytes === undefined || bytes < 0) return '-';
+            if (bytes < 1024) return `${bytes} B`;
+            if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+            return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+        }
+
+        function updateSummary(logs) {
+            const total = logs.length;
+            const errors = logs.filter(log => (log.status_code || 0) >= 500).length;
+            const warns = logs.filter(log => {
+                const status = log.status_code || 0;
+                return status >= 400 && status < 500;
+            }).length;
+            const success = logs.filter(log => (log.status_code || 0) > 0 && (log.status_code || 0) < 400).length;
+            const avgDuration = total > 0
+                ? Math.round(logs.reduce((sum, log) => sum + (log.duration_ms || 0), 0) / total)
+                : 0;
+
+            document.getElementById('totalLogsValue').textContent = total;
+            document.getElementById('errorLogsValue').textContent = errors;
+            document.getElementById('warnLogsValue').textContent = warns;
+            document.getElementById('successLogsValue').textContent = success;
+            document.getElementById('avgDurationValue').textContent = `${avgDuration} ms`;
+        }
+
+        function matchesSearch(log, searchTerm) {
+            if (!searchTerm) return true;
+            const haystack = [
+                log.message,
+                log.method,
+                log.path,
+                log.full_path,
+                log.query,
+                log.remote_ip,
+                log.host,
+                log.referer,
+                log.user_agent,
+                log.user_id,
+                log.user_nim,
+                log.user_role,
+                String(log.status_code || '')
+            ].join(' ').toLowerCase();
+            return haystack.includes(searchTerm);
+        }
+
+        function applyFilters() {
+            const searchTerm = document.getElementById('searchInput').value.trim().toLowerCase();
+            const selectedLevel = document.getElementById('levelFilter').value;
+
+            const filteredLogs = allLogs.filter((log) => {
+                const levelMatch = selectedLevel === 'all' || (log.level || 'info') === selectedLevel;
+                return levelMatch && matchesSearch(log, searchTerm);
+            });
+
+            updateSummary(filteredLogs);
+            renderLogs(filteredLogs);
         }
 
         function renderLogs(logs) {
@@ -120,37 +250,101 @@
             container.innerHTML = '';
 
             if (!Array.isArray(logs) || logs.length === 0) {
-                container.innerHTML = '<div class="p-4 text-center text-neutral-500">Belum ada log yang terekam.</div>';
+                container.innerHTML = '<div class="rounded-2xl border border-neutral-800 bg-neutral-900 p-6 text-center text-neutral-500">Tidak ada log yang cocok dengan filter saat ini.</div>';
                 return;
             }
 
-            logs.forEach(log => {
-                const item = document.createElement('div');
-                item.className = 'p-4 grid grid-cols-1 lg:grid-cols-[180px_100px_90px_120px_1fr_120px] gap-2 lg:gap-4';
-                item.innerHTML = `
-                    <div class="text-sm text-neutral-400">${new Date(log.timestamp).toLocaleString('id-ID')}</div>
-                    <div class="text-sm font-semibold uppercase ${levelClass(log.level)}">${log.level || '-'}</div>
-                    <div class="text-sm text-neutral-300">${log.status_code || '-'}</div>
-                    <div class="text-sm text-neutral-300">${log.method || '-'}</div>
-                    <div class="text-sm text-neutral-300 break-all">${log.path || '-'}</div>
-                    <div class="text-sm text-neutral-300">${log.duration_ms ?? '-'} ms</div>
+            logs.forEach((log) => {
+                const card = document.createElement('article');
+                card.className = 'rounded-2xl border border-neutral-800 bg-neutral-900 p-5 shadow-lg shadow-black/20';
+                const authenticatedUser = log.user_role || log.user_nim || log.user_id;
+
+                card.innerHTML = `
+                    <div class="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
+                        <div class="min-w-0 flex-1">
+                            <div class="mb-3 flex flex-wrap items-center gap-2">
+                                <span class="rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-wide ${levelTone(log.level || 'info')}">${escapeHtml(log.level || 'info')}</span>
+                                <span class="rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-wide ${statusTone(log.status_code || 0)}">${escapeHtml(log.status_code || '-')}</span>
+                                <span class="rounded-full border border-neutral-700 bg-neutral-950 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-neutral-300">${escapeHtml(log.method || '-')}</span>
+                                <span class="rounded-full border border-neutral-700 bg-neutral-950 px-3 py-1 text-xs font-semibold tracking-wide text-neutral-400">${formatRelativeTime(log.timestamp)}</span>
+                            </div>
+                            <div class="text-lg font-semibold text-white break-all">${escapeHtml(log.full_path || log.path || '-')}</div>
+                            <div class="mt-1 text-sm text-neutral-400 break-all">${escapeHtml(log.message || '-')}</div>
+                        </div>
+                        <div class="rounded-xl border border-neutral-800 bg-neutral-950 px-4 py-3 text-sm text-neutral-300 xl:min-w-[230px]">
+                            <div class="text-xs uppercase tracking-wide text-neutral-500">Waktu</div>
+                            <div class="mt-1 font-medium text-white">${formatExactTime(log.timestamp)}</div>
+                        </div>
+                    </div>
+
+                    <div class="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+                        <div class="rounded-xl border border-neutral-800 bg-neutral-950 p-4">
+                            <div class="text-xs uppercase tracking-wide text-neutral-500">Durasi</div>
+                            <div class="mt-2 text-lg font-semibold text-white">${escapeHtml(log.duration_ms ?? '-')} ms</div>
+                        </div>
+                        <div class="rounded-xl border border-neutral-800 bg-neutral-950 p-4">
+                            <div class="text-xs uppercase tracking-wide text-neutral-500">IP / Host</div>
+                            <div class="mt-2 text-sm font-medium text-white break-all">${escapeHtml(log.remote_ip || '-')}</div>
+                            <div class="mt-1 text-xs text-neutral-500 break-all">${escapeHtml(log.host || '-')}</div>
+                        </div>
+                        <div class="rounded-xl border border-neutral-800 bg-neutral-950 p-4">
+                            <div class="text-xs uppercase tracking-wide text-neutral-500">Ukuran Data</div>
+                            <div class="mt-2 text-sm text-white">Request: ${escapeHtml(formatBytes(log.content_length))}</div>
+                            <div class="mt-1 text-sm text-white">Response: ${escapeHtml(formatBytes(log.response_bytes))}</div>
+                        </div>
+                        <div class="rounded-xl border border-neutral-800 bg-neutral-950 p-4">
+                            <div class="text-xs uppercase tracking-wide text-neutral-500">User</div>
+                            ${authenticatedUser ? `
+                                <div class="mt-2 text-sm font-medium text-white">${escapeHtml(log.user_role || 'authenticated')}</div>
+                                <div class="mt-1 text-xs text-neutral-400 break-all">NIM: ${escapeHtml(log.user_nim || '-')}</div>
+                                <div class="mt-1 text-xs text-neutral-500 break-all">ID: ${escapeHtml(log.user_id || '-')}</div>
+                            ` : `
+                                <div class="mt-2 text-sm font-medium text-neutral-400">Guest / Anonymous</div>
+                                <div class="mt-1 text-xs text-neutral-500">Request tanpa user terautentikasi.</div>
+                            `}
+                        </div>
+                    </div>
+
+                    <div class="mt-4 grid gap-3 xl:grid-cols-2">
+                        <div class="rounded-xl border border-neutral-800 bg-neutral-950 p-4">
+                            <div class="text-xs uppercase tracking-wide text-neutral-500">Query & Referer</div>
+                            <div class="mt-2 text-sm text-white break-all">Query: ${escapeHtml(log.query || '-')}</div>
+                            <div class="mt-2 text-sm text-white break-all">Referer: ${escapeHtml(log.referer || '-')}</div>
+                        </div>
+                        <div class="rounded-xl border border-neutral-800 bg-neutral-950 p-4">
+                            <div class="text-xs uppercase tracking-wide text-neutral-500">User Agent</div>
+                            <div class="mt-2 text-sm text-white break-all">${escapeHtml(log.user_agent || '-')}</div>
+                        </div>
+                    </div>
                 `;
-                container.appendChild(item);
+
+                container.appendChild(card);
             });
+        }
+
+        async function extractErrorMessage(response, fallbackMessage) {
+            try {
+                const payload = await response.json();
+                return payload.error || payload.message || fallbackMessage;
+            } catch (_) {
+                const text = await response.text();
+                return text || fallbackMessage;
+            }
         }
 
         async function loadLogs() {
             const token = getToken();
-            const response = await fetch('https://asia-southeast2-personalsmz.cloudfunctions.net/ProjectSmZ/api/admin/logs', {
+            const response = await fetch(`${API_BASE_URL}/api/admin/logs`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
             if (!response.ok) {
-                throw new Error('Gagal memuat log web.');
+                throw new Error(await extractErrorMessage(response, 'Gagal memuat log web.'));
             }
 
-            const logs = await response.json();
-            renderLogs(logs);
+            allLogs = await response.json();
+            document.getElementById('lastUpdatedLabel').textContent = `Terakhir diperbarui: ${new Date().toLocaleTimeString('id-ID')}`;
+            applyFilters();
         }
 
         document.addEventListener('DOMContentLoaded', async () => {
@@ -161,17 +355,20 @@
                 return;
             }
 
+            document.getElementById('searchInput').addEventListener('input', applyFilters);
+            document.getElementById('levelFilter').addEventListener('change', applyFilters);
+
             try {
                 await loadLogs();
             } catch (error) {
-                document.getElementById('logsContainer').innerHTML = `<div class="p-4 text-center text-red-500">${error.message}</div>`;
+                document.getElementById('logsContainer').innerHTML = `<div class="rounded-2xl border border-red-900/50 bg-red-950/20 p-6 text-center text-red-400">${escapeHtml(error.message)}</div>`;
             }
 
             document.getElementById('refreshButton').addEventListener('click', async () => {
                 try {
                     await loadLogs();
                 } catch (error) {
-                    document.getElementById('logsContainer').innerHTML = `<div class="p-4 text-center text-red-500">${error.message}</div>`;
+                    document.getElementById('logsContainer').innerHTML = `<div class="rounded-2xl border border-red-900/50 bg-red-950/20 p-6 text-center text-red-400">${escapeHtml(error.message)}</div>`;
                 }
             });
         });
